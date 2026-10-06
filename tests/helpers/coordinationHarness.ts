@@ -1,9 +1,13 @@
 import { InMemoryRepository } from '@/core/shared/Repository';
 import { Role } from '@/core/users/UserAccount';
 import { FieldUpdateRecorder } from '@/core/sync/FieldUpdateRecorder';
+import { ReliefDistributionService } from '@/modules/dispatch/application/ReliefDistributionService';
+import { RescueDispatchService } from '@/modules/dispatch/application/RescueDispatchService';
 import { ShelterCoordinationService } from '@/modules/shelters/application/ShelterCoordinationService';
+import { ReliefCategory, ReliefStock, type ReliefDistribution } from '@/modules/dispatch/domain/Relief';
 import type { OccupancySnapshot } from '@/modules/shelters/domain/OccupancySnapshot';
-import { OwnerType, type ResourceOwner } from '@/core/organisations/ResourceOwner';
+import { RescueTeam } from '@/modules/dispatch/domain/RescueTeam';
+import { OrganisationDirectory, OwnerType, type ResourceOwner } from '@/core/organisations/ResourceOwner';
 import { Shelter, type ShelterProps } from '@/modules/shelters/domain/Shelter';
 import { makeUser, testKernel } from './fixtures';
 
@@ -22,11 +26,15 @@ export function shelter(overrides: Partial<ShelterProps> = {}): Shelter {
   });
 }
 
-/** UC03 object graph: three shelters and four owner organisations. */
+export const team = (id: string, homeDistrictId: string, ownerId = 'OWN-NAVY') =>
+  new RescueTeam({ id, name: `Team ${id}`, ownerId, homeDistrictId, specialisation: 'Boat rescue', members: 6 });
+
+/** UC03 + UC04 object graph: three shelters, three teams, four owners, three stocks. */
 export function coordinationHarness() {
   const officer = makeUser({ roles: [Role.DISTRICT_OFFICER], homeDistrictId: 'COL' });
   const otherDistrictOfficer = makeUser({ roles: [Role.DISTRICT_OFFICER], homeDistrictId: 'GAL' });
-  const k = testKernel([officer, otherDistrictOfficer]);
+  const navyMember = makeUser({ roles: [Role.RESCUE_TEAM_MEMBER], rescueTeamId: 'T-COL' });
+  const k = testKernel([officer, otherDistrictOfficer, navyMember]);
 
   const owners = new InMemoryRepository<ResourceOwner>([
     { id: 'OWN-GOV', name: 'Colombo District Secretariat', type: OwnerType.GOVERNMENT },
@@ -39,7 +47,14 @@ export function coordinationHarness() {
     shelter({ id: 'SHL-B', name: 'Hanwella College', location: { latitude: 6.9014, longitude: 80.0857 }, capacity: 300 }),
     shelter({ id: 'SHL-C', name: 'Kolonnawa Hall', location: { latitude: 6.9329, longitude: 79.8848 }, capacity: 50, occupancy: 48 }),
   ]);
+  const teams = new InMemoryRepository<RescueTeam>([team('T-COL', 'COL'), team('T-COL-2', 'COL', 'OWN-RC'), team('T-KAL', 'KAL')]);
+  const stocks = new InMemoryRepository<ReliefStock>([
+    new ReliefStock({ id: 'STK-RATIONS', ownerId: 'OWN-GOV', category: ReliefCategory.FOOD, itemName: 'Dry rations', unit: 'packs', quantity: 500 }),
+    new ReliefStock({ id: 'STK-MEDS', ownerId: 'OWN-RC', category: ReliefCategory.MEDICINE, itemName: 'Medicine packs', unit: 'packs', quantity: 40 }),
+    new ReliefStock({ id: 'STK-EMPTY', ownerId: 'OWN-DONOR', category: ReliefCategory.WATER, itemName: 'Water', unit: 'litres', quantity: 0 }),
+  ]);
   const snapshots = new InMemoryRepository<OccupancySnapshot>();
+  const distributions = new InMemoryRepository<ReliefDistribution>();
 
   const updates = new FieldUpdateRecorder(k.connectivity, k.sync, k.events, k.clock);
   k.sync.registerHandler(updates);
@@ -47,10 +62,17 @@ export function coordinationHarness() {
     ...k,
     officer,
     otherDistrictOfficer,
+    navyMember,
     owners,
     shelters,
+    teams,
+    stocks,
     snapshots,
+    distributions,
     updates,
     shelterService: new ShelterCoordinationService(shelters, snapshots, updates, k.inbox, k.users, k.geo, k.ids, k.clock),
+    rescue: new RescueDispatchService(teams, updates, k.inbox, k.users, k.geo, k.clock),
+    organisations: new OrganisationDirectory(owners),
+    relief: new ReliefDistributionService(stocks, new OrganisationDirectory(owners), distributions, shelters, updates, k.ids, k.clock),
   };
 }
