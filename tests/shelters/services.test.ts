@@ -83,7 +83,7 @@ describe('offline field updates (UC03 E1 / E4)', () => {
     const h = coordinationHarness();
     h.connectivity.setOnline(false);
     const result = h.shelterService.allocate('SHL-A', 10, h.officer);
-    h.shelterService.allocate('SHL-B', 5, h.officer);
+    h.rescue.dispatch('T-COL', { districtId: 'COL', locationDescription: 'Bridge' }, h.officer);
 
     expect(result.storedOffline).toBe(true);
     expect(h.sync.pending().map((i) => i.kind)).toEqual([FIELD_UPDATE_SYNC_KIND, FIELD_UPDATE_SYNC_KIND]);
