@@ -63,6 +63,13 @@ describe('InboxService', () => {
     inbox.markRead('unknown-id');
     expect(inbox.unreadCount('u1')).toBe(1);
   });
+
+  it('keeps the newest first when messages are delivered in the same instant', () => {
+    const inbox = new InboxService(new InMemoryRepository<InboxMessage>(), new SequentialIdGenerator(), new ManualClock(T0));
+    inbox.deliver({ userId: 'u1', kind: 'REPORT_UPDATE', title: 'submitted', body: '' });
+    inbox.deliver({ userId: 'u1', kind: 'REPORT_UPDATE', title: 'updated', body: '' });
+    expect(inbox.forUser('u1').map((m) => m.title)).toEqual(['updated', 'submitted']);
+  });
 });
 
 describe('OrganisationDirectory', () => {
