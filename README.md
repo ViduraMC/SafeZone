@@ -26,7 +26,7 @@ offline sync, notifications) supports all five use cases.
 ```bash
 npm install
 npm run dev          # http://localhost:5173 and open in a phone-sized window (or browser dev-tools device mode)
-npm test             # 210 unit + component tests
+npm test             # 211 unit + component tests
 npm run coverage     # coverage report (HTML in ./coverage)
 npm run build        # type-check + production build
 ```
