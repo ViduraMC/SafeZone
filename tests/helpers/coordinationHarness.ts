@@ -1,6 +1,8 @@
+import type { DisasterEvent } from '@/core/events/DisasterEvent';
 import { InMemoryRepository } from '@/core/shared/Repository';
 import { Role } from '@/core/users/UserAccount';
 import { FieldUpdateRecorder } from '@/core/sync/FieldUpdateRecorder';
+import { OperationalOverviewService } from '@/modules/shelters/application/OperationalOverviewService';
 import { ReliefDistributionService } from '@/modules/dispatch/application/ReliefDistributionService';
 import { RescueDispatchService } from '@/modules/dispatch/application/RescueDispatchService';
 import { ShelterCoordinationService } from '@/modules/shelters/application/ShelterCoordinationService';
@@ -9,7 +11,7 @@ import type { OccupancySnapshot } from '@/modules/shelters/domain/OccupancySnaps
 import { RescueTeam } from '@/modules/dispatch/domain/RescueTeam';
 import { OrganisationDirectory, OwnerType, type ResourceOwner } from '@/core/organisations/ResourceOwner';
 import { Shelter, type ShelterProps } from '@/modules/shelters/domain/Shelter';
-import { makeUser, testKernel } from './fixtures';
+import { makeUser, T0, testKernel } from './fixtures';
 
 export function shelter(overrides: Partial<ShelterProps> = {}): Shelter {
   return new Shelter({
@@ -55,6 +57,10 @@ export function coordinationHarness() {
   ]);
   const snapshots = new InMemoryRepository<OccupancySnapshot>();
   const distributions = new InMemoryRepository<ReliefDistribution>();
+  const events = new InMemoryRepository<DisasterEvent>([
+    { id: 'EVT-NOW', name: 'Kelani floods', hazardTypeCode: 'FLOOD', districtIds: ['COL', 'GAM'], startedAt: new Date(T0.getTime() - 3_600_000) },
+    { id: 'EVT-OLD', name: 'Old floods', hazardTypeCode: 'FLOOD', districtIds: ['GAL'], startedAt: new Date('2026-05-01'), endedAt: new Date('2026-05-10') },
+  ]);
 
   const updates = new FieldUpdateRecorder(k.connectivity, k.sync, k.events, k.clock);
   k.sync.registerHandler(updates);
@@ -69,10 +75,12 @@ export function coordinationHarness() {
     stocks,
     snapshots,
     distributions,
+    disasterEvents: events,
     updates,
     shelterService: new ShelterCoordinationService(shelters, snapshots, updates, k.inbox, k.users, k.geo, k.ids, k.clock),
     rescue: new RescueDispatchService(teams, updates, k.inbox, k.users, k.geo, k.clock),
     organisations: new OrganisationDirectory(owners),
     relief: new ReliefDistributionService(stocks, new OrganisationDirectory(owners), distributions, shelters, updates, k.ids, k.clock),
+    overview: new OperationalOverviewService(events, shelters, teams, distributions, k.clock),
   };
 }

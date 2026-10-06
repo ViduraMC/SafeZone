@@ -95,3 +95,25 @@ describe('offline field updates (UC03 E1 / E4)', () => {
     expect(h.published.filter((e) => e.payload.synced === true)).toHaveLength(2);
   });
 });
+
+describe('OperationalOverviewService', () => {
+  it('lists ongoing disaster events only', () => {
+    const h = coordinationHarness();
+    expect(h.overview.activeEvents().map((e) => e.id)).toEqual(['EVT-NOW']);
+  });
+
+  it('combines shelters, teams and distributed supplies for a district', () => {
+    const h = coordinationHarness();
+    h.shelterService.allocate('SHL-A', 90, h.officer);
+    h.rescue.dispatch('T-KAL', { districtId: 'COL', locationDescription: 'x' }, h.officer);
+    h.relief.distribute({ stockId: 'STK-RATIONS', quantity: 10, districtId: 'COL' }, h.officer);
+    h.relief.distribute({ stockId: 'STK-RATIONS', quantity: 5, districtId: 'COL' }, h.officer);
+
+    const overview = h.overview.overview('COL');
+
+    expect(overview.shelters).toMatchObject({ count: 3, capacity: 450, occupancy: 138 });
+    expect(overview.shelters.byStatus).toMatchObject({ NEAR_CAPACITY: 2, AVAILABLE: 1, FULL: 0 });
+    expect(overview.teamsByStatus).toMatchObject({ STANDBY: 2, DISPATCHED: 1 });
+    expect(overview.suppliesDistributed).toEqual({ FOOD: 15 });
+  });
+});
