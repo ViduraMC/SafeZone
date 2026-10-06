@@ -1,3 +1,6 @@
+import { createSafeZone } from '@/app/container';
+import { PERSONA_IDS } from '@/app/demo/personas';
+import { PAST_EVENT_ID, seedDemoData } from '@/app/demo/seed';
 import { InMemoryErrorLog } from '@/core/shared/ErrorLog';
 import { ManualClock } from '@/core/shared/Clock';
 import { AuthorizationError, NotFoundError, OperationFailedError, ValidationError } from '@/core/shared/errors';
@@ -7,6 +10,7 @@ import type { DisasterEvent } from '@/core/events/DisasterEvent';
 import { Role } from '@/core/users/UserAccount';
 import { DisasterReportGenerator, type ReportRequest } from '@/modules/analytics/application/DisasterReportGenerator';
 import { DmcOfficialAccessPolicy, DonorAccessPolicy } from '@/modules/analytics/application/ReportAccessPolicy';
+import { CsvReportExporter, JsonReportExporter } from '@/modules/analytics/application/ReportExporter';
 import type { ReportSectionBuilder } from '@/modules/analytics/application/SectionBuilders';
 import { ReportCategory } from '@/modules/analytics/domain/ReportCriteria';
 import type { ReportSection } from '@/modules/analytics/domain/ReportSections';
@@ -120,3 +124,69 @@ describe('DisasterReportGenerator (UC04)', () => {
   });
 });
 
+describe('end-to-end report from real module data', () => {
+  it('reflects the alerts, deliveries, shelters and distributions recorded in UC01 and UC03', async () => {
+    const app = createSafeZone();
+    await seedDemoData(app, NOW);
+    app.clock.freezeAt(NOW);
+
+    const report = app.reportGenerator.generate(
+      { eventId: PAST_EVENT_ID, categories: Object.values(ReportCategory), districtIds: ['GAL', 'MTR'], from: new Date('2026-05-19'), to: new Date('2026-05-29') },
+      app.users.get(PERSONA_IDS.dmcOfficial),
+    );
+    const [timeline, reach, occupancy, distribution, rescue] = report.sections;
+
+    expect(timeline).toMatchObject({ totals: { issued: 2, escalated: 1, resolved: 1 } });
+    expect(reach).toMatchObject({ targeted: 12, reached: 12 });
+    expect(occupancy).toMatchObject({ totalCapacity: 570 });
+    expect(distribution).toMatchObject({ totalsByDistrict: { GAL: 860, MTR: 1710 } });
+    expect(rescue).toMatchObject({ missions: 3, peopleRescued: 73, averageResponseMinutes: 98, crossOrganisationMissions: 3 });
+
+    const donorReport = app.reportGenerator.generate(
+      { eventId: PAST_EVENT_ID, categories: [ReportCategory.RESOURCE_DISTRIBUTION], districtIds: [], from: new Date('2026-05-19'), to: new Date('2026-05-29') },
+      app.users.get(PERSONA_IDS.donor),
+    );
+    expect(donorReport.sections[0]).toMatchObject({ restrictedToOwnerId: 'OWN-REDCROSS', byOwner: [{ ownerName: 'Sri Lanka Red Cross Society', quantity: 310 }] });
+    app.dispose();
+  });
+});
+
+describe('report exporters', () => {
+  const names = { districtName: (id: string) => ({ GAL: 'Galle', MTR: 'Matara' })[id] ?? id };
+
+  async function realReport() {
+    const app = createSafeZone();
+    await seedDemoData(app, NOW);
+    app.clock.freezeAt(NOW);
+    const report = app.reportGenerator.generate(
+      { eventId: PAST_EVENT_ID, categories: Object.values(ReportCategory), districtIds: [], from: new Date('2026-05-19'), to: new Date('2026-05-29') },
+      app.users.get(PERSONA_IDS.dmcOfficial),
+    );
+    app.dispose();
+    return report;
+  }
+
+  it('exports a CSV with a header block, one row per metric and escaped values', async () => {
+    const report = await realReport();
+    const csv = new CsvReportExporter().export({ ...report, eventName: 'Floods, "South"', notices: ['Partial data'] }, names);
+    const noArrival = new CsvReportExporter().export({ ...report, sections: [{ ...(report.sections[4] as object), averageResponseMinutes: undefined } as typeof report.sections[number]] }, names);
+    expect(noArrival).toContain('Rescue Operations,Average response (minutes),n/a');
+    const lines = csv.split('\n');
+    expect(lines[1]).toBe('Event,"Floods, ""South"""');
+    expect(lines).toContain('Section,Metric,Value');
+    expect(csv).toContain('Citizens Reached,Reach rate,100%');
+    expect(csv).toContain('Shelter Occupancy,Total capacity,570');
+    expect(csv).toMatch(/Resource Distribution,Galle - Cooked meal packets \(Sri Lanka Army\),400 packets/);
+    expect(csv).toMatch(/Alert Timeline,.* ISSUED,ALT-0001 WARNING - Gin Ganga flood warning/);
+    expect(csv).toContain('Rescue Operations,People rescued,73');
+    expect(csv).toContain('Rescue Operations,SL Navy Boat Team - Kalutara (Sri Lanka Navy),"2 missions, 55 rescued"');
+    expect(lines[lines.length - 1]).toBe('Notice,Partial data');
+  });
+
+  it('exports JSON that round-trips the report', async () => {
+    const report = await realReport();
+    const exporter = new JsonReportExporter();
+    expect(exporter).toMatchObject({ mimeType: 'application/json', fileExtension: 'json' });
+    expect(JSON.parse(exporter.export(report))).toMatchObject({ id: report.id, eventName: report.eventName });
+  });
+});
