@@ -2,7 +2,7 @@ import { AuthorizationError, NotFoundError, ValidationError } from '@/core/share
 import { COORDINATION_UPDATED_EVENT, FIELD_UPDATE_SYNC_KIND } from '@/core/sync/FieldUpdateRecorder';
 import { ShelterCapacityError, ShelterStatus } from '@/modules/shelters/domain/Shelter';
 import { makeUser } from '../helpers/fixtures';
-import { coordinationHarness } from '../helpers/coordinationHarness';
+import { coordinationHarness, shelter } from '../helpers/coordinationHarness';
 
 describe('ShelterCoordinationService', () => {
   it('allocates evacuees, records an occupancy snapshot and publishes the update', () => {
@@ -25,6 +25,12 @@ describe('ShelterCoordinationService', () => {
     expect(() => h.shelterService.allocate('SHL-C', 5, h.officer)).toThrow(ShelterCapacityError);
     expect(h.shelterService.alternatives('SHL-C', 5).map((s) => s.id)).toEqual(['SHL-A', 'SHL-B']);
     expect(h.shelterService.alternatives('SHL-A', 200).map((s) => s.id)).toEqual(['SHL-B']);
+  });
+
+  it('does not suggest shelters beyond a realistic travel distance', () => {
+    const h = coordinationHarness();
+    h.shelters.save(shelter({ id: 'SHL-GALLE', name: 'Galle Hall', districtId: 'GAL', location: { latitude: 6.05, longitude: 80.22 }, capacity: 500 }));
+    expect(h.shelterService.alternatives('SHL-A', 350).map((s) => s.id)).toEqual([]);
   });
 
   it('marks a shelter unavailable, notifies officers of that district and returns alternatives (E2)', () => {

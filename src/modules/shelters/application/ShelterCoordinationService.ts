@@ -35,6 +35,8 @@ export interface NearbyShelter {
 }
 
 export const MAX_SHELTER_CAPACITY = 10_000;
+/** Evacuees are only redirected to shelters within a realistic travel distance. */
+export const MAX_ALTERNATIVE_DISTANCE_KM = 40;
 
 /** UC03 Coordinate Emergency Shelters: register, allocate, release and handle closures. */
 export class ShelterCoordinationService {
@@ -119,12 +121,15 @@ export class ShelterCoordinationService {
     return shelter;
   }
 
-  /** A1 / E1 / E2: other shelters that can take the given number of people, nearest first. */
+  /** A1 / E1 / E2: nearby shelters (within 40 km) that can take the given number of people, nearest first. */
   alternatives(shelterId: string, people: number): Shelter[] {
     const origin = this.getShelter(shelterId);
     return this.shelters
       .findWhere((s) => s.id !== origin.id && s.isAvailable && s.remainingCapacity >= Math.max(1, people))
-      .sort((a, b) => distanceKm(origin.location, a.location) - distanceKm(origin.location, b.location));
+      .map((shelter) => ({ shelter, km: distanceKm(origin.location, shelter.location) }))
+      .filter(({ km }) => km <= MAX_ALTERNATIVE_DISTANCE_KM)
+      .sort((a, b) => a.km - b.km)
+      .map(({ shelter }) => shelter);
   }
 
   /** E2: the shelter can no longer be used; district officers are notified. */
