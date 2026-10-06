@@ -42,7 +42,8 @@ export class InboxService {
   forUser(userId: string): InboxMessage[] {
     return this.messages
       .findWhere((m) => m.userId === userId)
-      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+      // Newest first; sequential ids break ties between messages sent in the same instant.
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime() || b.id.localeCompare(a.id));
   }
 
   unreadCount(userId: string): number {
