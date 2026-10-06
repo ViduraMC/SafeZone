@@ -655,7 +655,8 @@ input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-
 .stepper li.is-done { background: var(--navy); color: #fff; }
 
 /* ---------- reports ---------- */
-.date-range { display: grid; grid-template-columns: 1fr auto 1fr; gap: 8px; align-items: center; }
+.date-range { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); gap: 8px; align-items: center; }
+.date-range input { min-width: 0; padding: 12px 8px; }
 
 .timeline { list-style: none; padding: 0 0 0 14px; margin: 0; border-left: 2px solid var(--border); display: flex; flex-direction: column; gap: 10px; }
 .timeline li { display: flex; flex-direction: column; gap: 2px; position: relative; font-size: 14px; }
