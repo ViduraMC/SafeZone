@@ -1,0 +1,43 @@
+@startuml sequence-uc03
+!include style.iuml
+autonumber
+title UC03 Coordinate Emergency Shelters: allocate evacuees in Colombo District
+actor "District Officer" as DO
+boundary "ShelterManageScreen" as UI
+control "OperationalOverviewService" as O
+control "ShelterCoordinationService" as SS
+entity "Shelter" as SH
+database "OccupancySnapshot" as SN
+participant "FieldUpdateRecorder" as FU
+participant "InboxService" as IN
+
+DO -> UI : open Emergency Coordination
+UI -> O : activeEvents(), overview(districtId)
+O --> UI : shelters, teams, supplies
+DO -> UI : select shelter, enter evacuees
+UI -> SS : allocate(shelterId, people, officer)
+SS -> SH : admit(people)
+alt not enough places (E1)
+  SH --> SS : ShelterCapacityError(remaining)
+  SS --> UI : error
+  UI -> SS : alternatives(shelterId, people)
+  SS --> UI : nearby shelters with space
+else admitted
+  SS -> SN ** : record occupancy
+  SS -> FU : record(update)
+  opt device offline (E3)
+    FU -> FU : keep in outbox, sync later (E4 retries)
+  end
+  SS --> UI : AllocationResult(capacityWarning)
+  opt near capacity (A1)
+    UI -> SS : alternatives(shelterId, 1)
+  end
+end
+opt shelter becomes unusable (E2)
+  DO -> UI : Mark unavailable + reason
+  UI -> SS : markUnavailable(shelterId, reason, officer)
+  SS -> SH : markUnavailable(reason)
+  SS -> IN : notify district officers
+  SS --> UI : alternatives
+end
+@enduml

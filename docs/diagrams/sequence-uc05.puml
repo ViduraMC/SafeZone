@@ -1,0 +1,40 @@
+@startuml sequence-uc05
+!include style.iuml
+autonumber
+title UC05 Generate Disaster Response Reports: Southern Monsoon Floods, May 2026
+actor "DMC Official / Donor" as U
+boundary "ReportsScreen" as UI
+control "DisasterReportGenerator" as G
+participant "ReportingPeriod" as P
+participant "ReportAccessPolicy" as AP
+participant "ReportSectionBuilder" as B
+participant "Data source ports" as DS
+participant "ReportExporter" as X
+
+U -> UI : event, categories, districts, period
+UI -> G : generate(request, user)
+G -> P : of(from, to, now)
+alt invalid period (E2)
+  P --> UI : ValidationError(period)
+end
+G -> AP : authorise(categories, user)
+alt donor asks for restricted data (E3)
+  AP --> UI : AuthorizationError
+else donor report (A3)
+  AP --> G : scope(ownerId)
+end
+loop each selected category (A1, A2)
+  G -> B : build(context)
+  B -> DS : read facts
+  DS --> B : alerts, deliveries, snapshots, distributions, missions
+  B --> G : section(hasData)
+end
+alt unexpected builder failure (E4)
+  G --> UI : OperationFailedError (logged)
+else success
+  G --> UI : report + notices for sections without data (E1)
+end
+U -> UI : Export CSV / JSON / Print
+UI -> X : export(report, names)
+X --> U : file
+@enduml

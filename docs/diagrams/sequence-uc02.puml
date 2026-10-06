@@ -1,0 +1,57 @@
+@startuml sequence-uc02
+!include style.iuml
+autonumber
+title UC02 Submit & Verify Hazard Report: report road flooding at Kaduwela Junction
+actor "Citizen / Volunteer" as R
+boundary "ReportIncidentScreen" as UI
+control "ReportSubmissionService" as RS
+participant "LocationProvider" as L
+participant "SyncService" as Sync
+entity "GroundReport" as G
+participant "ReportNotifier" as N
+actor "Duty Officer" as DO
+control "ReportVerificationService" as VS
+
+R -> UI : choose type, describe, rate severity
+UI -> RS : detectLocation()
+RS -> L : currentPosition()
+alt GPS unavailable (E1)
+  L --> UI : LocationUnavailableError
+  R -> UI : district + landmark
+  UI -> RS : manualLocation(districtId, place)
+else GPS available
+  L --> RS : coordinates
+end
+R -> UI : add photo
+UI -> RS : attachPhoto(file)
+note right of RS : PhotoValidator rejects\nunsupported or empty files (E4)
+R -> UI : Submit Urgent Report
+UI -> RS : submit(draft, reporter)
+RS -> RS : ReportDraftValidator.validate (E3)
+alt device offline (E2)
+  RS -> G ** : submit(props, offline) : PENDING_SYNC
+  RS -> Sync : enqueue('ground-report', id)
+  ... connectivity returns ...
+  Sync -> RS : onSynced(item)
+  RS -> G : markSynced() : PENDING_VERIFICATION
+else online
+  RS -> G ** : submit(props) : PENDING_VERIFICATION
+end
+RS -> N : notifyDutyOfficers(report)
+N --> DO : inbox notification
+DO -> VS : pendingQueue()
+alt verify
+  DO -> VS : verify(id, officer, score, comment)
+  VS -> G : verify() : VERIFIED
+else needs more information (A1)
+  DO -> VS : requestMoreInformation(id, officer, question)
+  VS -> G : NEEDS_MORE_INFO
+  R -> RS : provideAdditionalInformation(id, reporter, text)
+  RS -> G : supplement() : PENDING_VERIFICATION
+else reject (A2)
+  DO -> VS : reject(id, officer, reason)
+  VS -> G : reject() : REJECTED
+end
+VS -> N : notifyReporter(report, decision)
+note over VS : verified reports reach UC01\nthrough VerifiedReportFeed
+@enduml
