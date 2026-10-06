@@ -1,0 +1,81 @@
+@startuml class-uc04
+!include style.iuml
+title UC04 Dispatch Rescue Teams & Relief Resources: design class diagram
+
+class RescueDispatchService <<application>> {
+  +availableInDistrict(districtId): RescueTeam[]
+  +availableElsewhere(districtId): RescueTeam[]
+  +dispatch(teamId, request, officer): RescueTeam
+  +updateStatus(teamId, status, actor): RescueTeam
+  +completeMission(teamId, rescued, notes, actor): MissionRecord
+}
+class ReliefDistributionService <<application>> {
+  +availableStock(ownerTypes): StockView[]
+  +distribute(request, officer): ReliefDistribution
+  +distributionsTo(districtId)
+}
+class RescueTeam <<entity>> {
+  -status: RescueTeamStatus
+  -assignment: RescueAssignment
+  +dispatch(assignment)
+  +updateStatus(next, at)
+  +completeMission(rescued, notes, at): MissionRecord
+}
+enum RescueTeamStatus {
+  STANDBY
+  DISPATCHED
+  EN_ROUTE
+  ON_SCENE
+  RETURNING
+}
+class RescueAssignment {
+  +districtId
+  +locationDescription
+  +crossOrganisation: boolean
+}
+class MissionRecord {
+  +onSceneAt
+  +completedAt
+  +peopleRescued
+}
+class ReliefStock <<entity>> {
+  +category: ReliefCategory
+  -available: number
+  +withdraw(quantity)
+}
+class ReliefDistribution {
+  +quantity
+  +districtId
+  +shelterId
+}
+class InsufficientStockError {
+  +requested
+  +available
+}
+class ResourceOwner {
+  +type: OwnerType
+}
+enum OwnerType {
+  GOVERNMENT
+  ARMED_FORCES
+  NGO
+  PRIVATE_DONOR
+}
+class OrganisationDirectory
+class FieldUpdateRecorder
+
+RescueDispatchService --> RescueTeam
+RescueDispatchService --> FieldUpdateRecorder
+RescueTeam --> RescueTeamStatus
+RescueTeam *-- "0..1" RescueAssignment
+RescueTeam *-- "0..*" MissionRecord
+RescueTeam --> ResourceOwner : owned by
+ReliefDistributionService --> ReliefStock
+ReliefDistributionService --> ReliefDistribution : records
+ReliefDistributionService --> OrganisationDirectory
+ReliefDistributionService --> FieldUpdateRecorder
+ReliefStock ..> InsufficientStockError : throws
+ReliefStock --> ResourceOwner : pledged by
+ResourceOwner --> OwnerType
+OrganisationDirectory o-- ResourceOwner
+@enduml

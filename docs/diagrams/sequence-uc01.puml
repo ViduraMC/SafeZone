@@ -1,0 +1,56 @@
+@startuml sequence-uc01
+!include style.iuml
+autonumber
+title UC01 Issue Hazard Warning: issue a flood warning for the Kalu Ganga basin
+actor "DMC Officer" as DMC
+boundary "IssueWarningScreen" as UI
+control "AlertService" as S
+participant "AlertDraftValidator" as V
+participant "VerifiedReportFeed" as F
+entity "HazardAlert" as A
+participant "AlertBroadcaster" as B
+participant "ChannelSelectionPolicy" as P
+participant "NotificationChannel" as C
+database "DeliveryRecord" as D
+
+DMC -> UI : open warning dashboard
+UI -> S : dashboard()
+S -> F : listVerified()
+F --> S : verified ground reports
+DMC -> UI : fill form, select river basin
+UI -> S : preview(draft)
+S -> V : validate(draft)
+alt invalid input (E1)
+  V --> UI : ValidationError(fieldErrors)
+  UI --> DMC : highlight every invalid field
+else valid
+  S --> UI : WarningPreview(area, recipients, channels)
+end
+DMC -> UI : Issue Warning
+UI -> S : issueWarning(draft, officer)
+S -> A ** : draft(props)
+S -> A : activate(now)
+S -> S : find recipients in TargetArea districts
+S -> B : broadcast(alert, recipients)
+loop each recipient
+  B -> P : plan(severity, recipient)
+  B -> C : send(message, recipient)
+  alt delivered
+    B -> D ** : DELIVERED
+  else planned channels failed (E2)
+    B -> C : send() on an alternative channel
+    opt still unreachable
+      B -> D ** : QUEUED for retry
+    end
+  end
+end
+B --> S : BroadcastSummary
+S --> UI : WarningResult(noRecipientsFound = E3)
+UI --> DMC : delivery summary (reached, queued)
+opt escalate later (A1)
+  DMC -> UI : new level + reason + supporting reports
+  UI -> S : escalateWarning(id, level, reason, officer, reportIds)
+  S -> A : escalate(...)
+  S -> B : broadcast(alert, recipients, isUpdate)
+end
+@enduml

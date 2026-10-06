@@ -1,0 +1,76 @@
+@startuml class-uc02
+!include style.iuml
+title UC02 Submit & Verify Hazard Report: design class diagram
+
+class ReportSubmissionService <<application>> {
+  +detectLocation(): ReportLocation
+  +manualLocation(districtId, place)
+  +attachPhoto(file): Evidence
+  +submit(draft, reporter): GroundReport
+  +provideAdditionalInformation(id, reporter, text, photos)
+  +onSynced(item)
+}
+class ReportVerificationService <<application>> {
+  +pendingQueue(): GroundReport[]
+  +verify(id, officer, score, comment)
+  +requestMoreInformation(id, officer, question)
+  +reject(id, officer, reason)
+  +listVerified(districtIds)
+}
+class GroundReport <<entity>> {
+  -status: ReportStatus
+  +severityAssessment: LOW | MEDIUM | HIGH
+  +markSynced(at)
+  +verify(officer, score, comment, at)
+  +requestMoreInformation(officer, question, at)
+  +reject(officer, reason, at)
+  +supplement(text, evidence, at)
+}
+enum ReportStatus {
+  PENDING_SYNC
+  PENDING_VERIFICATION
+  NEEDS_MORE_INFO
+  VERIFIED
+  REJECTED
+}
+class ReportReview {
+  +decision
+  +comment
+  +credibilityScore
+  +at
+}
+class Evidence {
+  +fileName
+  +mimeType
+  +sizeBytes
+}
+class ReportLocation {
+  +latitude / longitude
+  +source: GPS | MANUAL
+  +districtId
+}
+interface LocationProvider <<port>> {
+  +currentPosition(): Coordinates
+}
+class ReportDraftValidator
+class PhotoValidator
+class ReportNotifier {
+  +notifyDutyOfficers(report)
+  +notifyReporter(report, title, body)
+}
+interface SyncHandler
+interface VerifiedReportFeed
+
+ReportSubmissionService ..|> SyncHandler
+ReportVerificationService ..|> VerifiedReportFeed
+ReportSubmissionService --> LocationProvider
+ReportSubmissionService --> ReportDraftValidator
+ReportSubmissionService --> PhotoValidator
+ReportSubmissionService --> ReportNotifier
+ReportVerificationService --> ReportNotifier
+ReportSubmissionService --> GroundReport : creates
+GroundReport --> ReportStatus
+GroundReport *-- "1..*" Evidence
+GroundReport *-- "1" ReportLocation
+GroundReport *-- "0..*" ReportReview
+@enduml
