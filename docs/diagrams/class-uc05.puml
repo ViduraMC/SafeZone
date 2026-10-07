@@ -1,0 +1,62 @@
+@startuml class-uc05
+!include style.iuml
+title UC05 Generate Disaster Response Reports: design class diagram
+
+class DisasterReportGenerator <<application>> {
+  +availableEvents(): DisasterEvent[]
+  +generate(request, user): DisasterResponseReport
+}
+class ReportingPeriod <<value>> {
+  +of(from, to, now)
+  +contains(at)
+  +overlaps(start, end)
+}
+interface ReportSectionBuilder <<strategy>> {
+  +category: ReportCategory
+  +build(context): ReportSection
+}
+class AlertTimelineBuilder
+class CitizensReachedBuilder
+class ShelterOccupancyBuilder
+class ResourceDistributionBuilder
+class RescueOperationsBuilder
+interface ReportAccessPolicy <<strategy>> {
+  +supports(user): boolean
+  +authorise(categories, user): AccessScope
+}
+class DmcOfficialAccessPolicy
+class DonorAccessPolicy
+interface ReportExporter <<strategy>> {
+  +export(report, names): string
+}
+class CsvReportExporter
+class JsonReportExporter
+interface AlertHistorySource <<port>>
+interface DeliveryStatisticsSource <<port>>
+interface OccupancyHistorySource <<port>>
+interface DistributionHistorySource <<port>>
+interface RescueHistorySource <<port>>
+class DisasterResponseReport {
+  +sections: ReportSection[]
+  +notices: string[]
+}
+
+DisasterReportGenerator o-- "1..*" ReportSectionBuilder
+DisasterReportGenerator o-- "1..*" ReportAccessPolicy
+DisasterReportGenerator --> ReportingPeriod
+DisasterReportGenerator --> DisasterResponseReport : creates
+ReportSectionBuilder <|.. AlertTimelineBuilder
+ReportSectionBuilder <|.. CitizensReachedBuilder
+ReportSectionBuilder <|.. ShelterOccupancyBuilder
+ReportSectionBuilder <|.. ResourceDistributionBuilder
+ReportSectionBuilder <|.. RescueOperationsBuilder
+ReportAccessPolicy <|.. DmcOfficialAccessPolicy
+ReportAccessPolicy <|.. DonorAccessPolicy
+ReportExporter <|.. CsvReportExporter
+ReportExporter <|.. JsonReportExporter
+AlertTimelineBuilder --> AlertHistorySource
+CitizensReachedBuilder --> DeliveryStatisticsSource
+ShelterOccupancyBuilder --> OccupancyHistorySource
+ResourceDistributionBuilder --> DistributionHistorySource
+RescueOperationsBuilder --> RescueHistorySource
+@enduml

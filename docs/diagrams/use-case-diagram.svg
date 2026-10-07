@@ -1,0 +1,199 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1225" height="1960" viewBox="0 0 1225 1960" font-family="Liberation Sans, Arial, sans-serif">
+<defs><marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10" fill="none" stroke="#1B2F6E" stroke-width="1.5"/></marker>
+<marker id="tri" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="12" markerHeight="12" orient="auto"><path d="M0,0 L12,6 L0,12 Z" fill="white" stroke="#1B2F6E" stroke-width="1.3"/></marker></defs>
+<rect width="1225" height="1960" fill="white"/>
+<rect x="150" y="36" width="810" height="1869" rx="10" fill="#FCFDFF" stroke="#1B2F6E" stroke-width="1.8"/>
+<text x="555.0" y="26" font-size="18" text-anchor="middle" font-weight="700" fill="#1B2F6E">SafeZone Mobile App</text>
+<text x="162" y="64" font-size="13" fill="#6B7A99" font-weight="700" letter-spacing="0.4">UC01 ISSUE HAZARD WARNING</text>
+<line x1="150" y1="434" x2="960" y2="434" stroke="#AEBBD6" stroke-dasharray="3 5"/>
+<text x="162" y="458" font-size="13" fill="#6B7A99" font-weight="700" letter-spacing="0.4">UC02 SUBMIT &amp; VERIFY HAZARD REPORT</text>
+<line x1="150" y1="844" x2="960" y2="844" stroke="#AEBBD6" stroke-dasharray="3 5"/>
+<text x="162" y="868" font-size="13" fill="#6B7A99" font-weight="700" letter-spacing="0.4">UC03 COORDINATE EMERGENCY SHELTERS</text>
+<line x1="150" y1="1157" x2="960" y2="1157" stroke="#AEBBD6" stroke-dasharray="3 5"/>
+<text x="162" y="1181" font-size="13" fill="#6B7A99" font-weight="700" letter-spacing="0.4">UC04 DISPATCH RESCUE TEAMS &amp; RELIEF RESOURCES</text>
+<line x1="150" y1="1527" x2="960" y2="1527" stroke="#AEBBD6" stroke-dasharray="3 5"/>
+<text x="162" y="1551" font-size="13" fill="#6B7A99" font-weight="700" letter-spacing="0.4">UC05 GENERATE DISASTER RESPONSE REPORT</text>
+<ellipse cx="305" cy="205" rx="130" ry="44" fill="#D7E3F7" stroke="#1B2F6E" stroke-width="1.8"/>
+<text x="305" y="198.8" font-size="17" text-anchor="middle" font-weight="700" fill="#14213D">UC01 Issue Hazard</text>
+<text x="305" y="219.20000000000002" font-size="17" text-anchor="middle" font-weight="700" fill="#14213D">Warning</text>
+<ellipse cx="575" cy="105" rx="118" ry="36" fill="#F6F8FC" stroke="#1B2F6E" stroke-width="1.2"/>
+<text x="575" y="99.7" font-size="15.5" text-anchor="middle" font-weight="400" fill="#14213D">Select Target Area</text>
+<text x="575" y="118.3" font-size="15.5" text-anchor="middle" font-weight="400" fill="#14213D">(district or river basin)</text>
+<ellipse cx="850" cy="205" rx="105" ry="36" fill="#F6F8FC" stroke="#1B2F6E" stroke-width="1.2"/>
+<text x="850" y="199.7" font-size="15.5" text-anchor="middle" font-weight="400" fill="#14213D">Check Verified</text>
+<text x="850" y="218.29999999999998" font-size="15.5" text-anchor="middle" font-weight="400" fill="#14213D">Reports</text>
+<ellipse cx="575" cy="300" rx="118" ry="36" fill="#F6F8FC" stroke="#1B2F6E" stroke-width="1.2"/>
+<text x="575" y="294.7" font-size="15.5" text-anchor="middle" font-weight="400" fill="#14213D">Deliver Alert by</text>
+<text x="575" y="313.3" font-size="15.5" text-anchor="middle" font-weight="400" fill="#14213D">Push and SMS</text>
+<ellipse cx="305" cy="335" rx="118" ry="36" fill="#F6F8FC" stroke="#1B2F6E" stroke-width="1.2"/>
+<text x="305" y="329.7" font-size="15.5" text-anchor="middle" font-weight="400" fill="#14213D">Escalate Warning</text>
+<text x="305" y="348.3" font-size="15.5" text-anchor="middle" font-weight="400" fill="#14213D">Level</text>
+<ellipse cx="575" cy="405" rx="118" ry="36" fill="#F6F8FC" stroke="#1B2F6E" stroke-width="1.2"/>
+<text x="575" y="399.7" font-size="15.5" text-anchor="middle" font-weight="400" fill="#14213D">Retry Queued</text>
+<text x="575" y="418.3" font-size="15.5" text-anchor="middle" font-weight="400" fill="#14213D">Deliveries</text>
+<ellipse cx="305" cy="600" rx="130" ry="44" fill="#D7E3F7" stroke="#1B2F6E" stroke-width="1.8"/>
+<text x="305" y="593.8" font-size="17" text-anchor="middle" font-weight="700" fill="#14213D">UC02 Submit &amp; Verify</text>
+<text x="305" y="614.1999999999999" font-size="17" text-anchor="middle" font-weight="700" fill="#14213D">Hazard Report</text>
+<ellipse cx="575" cy="505" rx="118" ry="36" fill="#F6F8FC" stroke="#1B2F6E" stroke-width="1.2"/>
+<text x="575" y="499.7" font-size="15.5" text-anchor="middle" font-weight="400" fill="#14213D">Capture Location</text>
+<text x="575" y="518.3" font-size="15.5" text-anchor="middle" font-weight="400" fill="#14213D">(GPS or manual)</text>
+<ellipse cx="575" cy="690" rx="118" ry="36" fill="#F6F8FC" stroke="#1B2F6E" stroke-width="1.2"/>
+<text x="575" y="684.7" font-size="15.5" text-anchor="middle" font-weight="400" fill="#14213D">Attach Photo</text>
+<text x="575" y="703.3000000000001" font-size="15.5" text-anchor="middle" font-weight="400" fill="#14213D">Evidence</text>
+<ellipse cx="305" cy="730" rx="118" ry="36" fill="#F6F8FC" stroke="#1B2F6E" stroke-width="1.2"/>
+<text x="305" y="724.7" font-size="15.5" text-anchor="middle" font-weight="400" fill="#14213D">Store Report</text>
+<text x="305" y="743.3000000000001" font-size="15.5" text-anchor="middle" font-weight="400" fill="#14213D">Offline</text>
+<ellipse cx="850" cy="575" rx="105" ry="36" fill="#F6F8FC" stroke="#1B2F6E" stroke-width="1.2"/>
+<text x="850" y="569.7" font-size="15.5" text-anchor="middle" font-weight="400" fill="#14213D">Verify Report</text>
+<text x="850" y="588.3000000000001" font-size="15.5" text-anchor="middle" font-weight="400" fill="#14213D">Credibility</text>
+<ellipse cx="850" cy="700" rx="105" ry="36" fill="#F6F8FC" stroke="#1B2F6E" stroke-width="1.2"/>
+<text x="850" y="694.7" font-size="15.5" text-anchor="middle" font-weight="400" fill="#14213D">Request Additional</text>
+<text x="850" y="713.3000000000001" font-size="15.5" text-anchor="middle" font-weight="400" fill="#14213D">Information</text>
+<ellipse cx="850" cy="800" rx="95" ry="36" fill="#F6F8FC" stroke="#1B2F6E" stroke-width="1.2"/>
+<text x="850" y="804.0" font-size="15.5" text-anchor="middle" font-weight="400" fill="#14213D">Reject Report</text>
+<ellipse cx="305" cy="960" rx="130" ry="44" fill="#D7E3F7" stroke="#1B2F6E" stroke-width="1.8"/>
+<text x="305" y="953.8" font-size="17" text-anchor="middle" font-weight="700" fill="#14213D">UC03 Coordinate</text>
+<text x="305" y="974.1999999999999" font-size="17" text-anchor="middle" font-weight="700" fill="#14213D">Emergency Shelters</text>
+<ellipse cx="575" cy="915" rx="118" ry="36" fill="#F6F8FC" stroke="#1B2F6E" stroke-width="1.2"/>
+<text x="575" y="909.7" font-size="15.5" text-anchor="middle" font-weight="400" fill="#14213D">Allocate Evacuees</text>
+<text x="575" y="928.3000000000001" font-size="15.5" text-anchor="middle" font-weight="400" fill="#14213D">to Shelter</text>
+<ellipse cx="575" cy="1025" rx="118" ry="36" fill="#F6F8FC" stroke="#1B2F6E" stroke-width="1.2"/>
+<text x="575" y="1019.7" font-size="15.5" text-anchor="middle" font-weight="400" fill="#14213D">Track Shelter</text>
+<text x="575" y="1038.3" font-size="15.5" text-anchor="middle" font-weight="400" fill="#14213D">Occupancy</text>
+<ellipse cx="850" cy="915" rx="88" ry="36" fill="#F6F8FC" stroke="#1B2F6E" stroke-width="1.2"/>
+<text x="850" y="909.7" font-size="15.5" text-anchor="middle" font-weight="400" fill="#14213D">Register</text>
+<text x="850" y="928.3000000000001" font-size="15.5" text-anchor="middle" font-weight="400" fill="#14213D">Shelter</text>
+<ellipse cx="305" cy="1090" rx="118" ry="36" fill="#F6F8FC" stroke="#1B2F6E" stroke-width="1.2"/>
+<text x="305" y="1084.7" font-size="15.5" text-anchor="middle" font-weight="400" fill="#14213D">Mark Shelter</text>
+<text x="305" y="1103.3" font-size="15.5" text-anchor="middle" font-weight="400" fill="#14213D">Unavailable</text>
+<ellipse cx="305" cy="1340" rx="140" ry="46" fill="#D7E3F7" stroke="#1B2F6E" stroke-width="1.8"/>
+<text x="305" y="1333.8" font-size="17" text-anchor="middle" font-weight="700" fill="#14213D">UC04 Dispatch Rescue</text>
+<text x="305" y="1354.2" font-size="17" text-anchor="middle" font-weight="700" fill="#14213D">Teams &amp; Relief Resources</text>
+<ellipse cx="575" cy="1240" rx="118" ry="36" fill="#F6F8FC" stroke="#1B2F6E" stroke-width="1.2"/>
+<text x="575" y="1234.7" font-size="15.5" text-anchor="middle" font-weight="400" fill="#14213D">Dispatch Rescue</text>
+<text x="575" y="1253.3" font-size="15.5" text-anchor="middle" font-weight="400" fill="#14213D">Team</text>
+<ellipse cx="850" cy="1240" rx="110" ry="36" fill="#F6F8FC" stroke="#1B2F6E" stroke-width="1.2"/>
+<text x="850" y="1234.7" font-size="15.5" text-anchor="middle" font-weight="400" fill="#14213D">Request Team from</text>
+<text x="850" y="1253.3" font-size="15.5" text-anchor="middle" font-weight="400" fill="#14213D">Another Organisation</text>
+<ellipse cx="575" cy="1355" rx="118" ry="36" fill="#F6F8FC" stroke="#1B2F6E" stroke-width="1.2"/>
+<text x="575" y="1349.7" font-size="15.5" text-anchor="middle" font-weight="400" fill="#14213D">Update Mission</text>
+<text x="575" y="1368.3" font-size="15.5" text-anchor="middle" font-weight="400" fill="#14213D">Status &amp; Outcome</text>
+<ellipse cx="575" cy="1470" rx="118" ry="36" fill="#F6F8FC" stroke="#1B2F6E" stroke-width="1.2"/>
+<text x="575" y="1464.7" font-size="15.5" text-anchor="middle" font-weight="400" fill="#14213D">Distribute Relief</text>
+<text x="575" y="1483.3" font-size="15.5" text-anchor="middle" font-weight="400" fill="#14213D">Supplies</text>
+<ellipse cx="305" cy="1665" rx="135" ry="46" fill="#D7E3F7" stroke="#1B2F6E" stroke-width="1.8"/>
+<text x="305" y="1658.8" font-size="17" text-anchor="middle" font-weight="700" fill="#14213D">UC05 Generate Disaster</text>
+<text x="305" y="1679.2" font-size="17" text-anchor="middle" font-weight="700" fill="#14213D">Response Report</text>
+<ellipse cx="575" cy="1610" rx="118" ry="36" fill="#F6F8FC" stroke="#1B2F6E" stroke-width="1.2"/>
+<text x="575" y="1604.7" font-size="15.5" text-anchor="middle" font-weight="400" fill="#14213D">Select Disaster</text>
+<text x="575" y="1623.3" font-size="15.5" text-anchor="middle" font-weight="400" fill="#14213D">Event &amp; Period</text>
+<ellipse cx="575" cy="1720" rx="118" ry="36" fill="#F6F8FC" stroke="#1B2F6E" stroke-width="1.2"/>
+<text x="575" y="1714.7" font-size="15.5" text-anchor="middle" font-weight="400" fill="#14213D">Compile Report</text>
+<text x="575" y="1733.3" font-size="15.5" text-anchor="middle" font-weight="400" fill="#14213D">Sections</text>
+<ellipse cx="305" cy="1820" rx="118" ry="36" fill="#F6F8FC" stroke="#1B2F6E" stroke-width="1.2"/>
+<text x="305" y="1814.7" font-size="15.5" text-anchor="middle" font-weight="400" fill="#14213D">Export Report</text>
+<text x="305" y="1833.3" font-size="15.5" text-anchor="middle" font-weight="400" fill="#14213D">(CSV, JSON, PDF)</text>
+<ellipse cx="575" cy="1835" rx="118" ry="36" fill="#F6F8FC" stroke="#1B2F6E" stroke-width="1.2"/>
+<text x="575" y="1829.7" font-size="15.5" text-anchor="middle" font-weight="400" fill="#14213D">Generate Donor</text>
+<text x="575" y="1848.3" font-size="15.5" text-anchor="middle" font-weight="400" fill="#14213D">Specific Report</text>
+<g stroke="#1B2F6E" stroke-width="1.6" fill="none"><circle cx="70" cy="145" r="10" fill="white"/><line x1="70" y1="155" x2="70" y2="183"/><line x1="54" y1="165" x2="86" y2="165"/><line x1="70" y1="183" x2="57" y2="203"/><line x1="70" y1="183" x2="83" y2="203"/></g>
+<text x="70" y="221" font-size="15" text-anchor="middle" fill="#14213D">DMC Officer</text>
+<g stroke="#1B2F6E" stroke-width="1.6" fill="none"><circle cx="70" cy="420" r="10" fill="white"/><line x1="70" y1="430" x2="70" y2="458"/><line x1="54" y1="440" x2="86" y2="440"/><line x1="70" y1="458" x2="57" y2="478"/><line x1="70" y1="458" x2="83" y2="478"/></g>
+<text x="70" y="496" font-size="15" text-anchor="middle" fill="#14213D">Citizen</text>
+<g stroke="#1B2F6E" stroke-width="1.6" fill="none"><circle cx="70" cy="660" r="10" fill="white"/><line x1="70" y1="670" x2="70" y2="698"/><line x1="54" y1="680" x2="86" y2="680"/><line x1="70" y1="698" x2="57" y2="718"/><line x1="70" y1="698" x2="83" y2="718"/></g>
+<text x="70" y="736" font-size="15" text-anchor="middle" fill="#14213D">Community</text>
+<text x="70" y="751" font-size="15" text-anchor="middle" fill="#14213D">Volunteer</text>
+<g stroke="#1B2F6E" stroke-width="1.6" fill="none"><circle cx="1040" cy="270" r="10" fill="white"/><line x1="1040" y1="280" x2="1040" y2="308"/><line x1="1024" y1="290" x2="1056" y2="290"/><line x1="1040" y1="308" x2="1027" y2="328"/><line x1="1040" y1="308" x2="1053" y2="328"/></g>
+<text x="1040" y="346" font-size="15" text-anchor="middle" fill="#14213D">SMS Gateway</text>
+<text x="1040" y="361" font-size="15" text-anchor="middle" fill="#14213D">«system»</text>
+<g stroke="#1B2F6E" stroke-width="1.6" fill="none"><circle cx="1040" cy="440" r="10" fill="white"/><line x1="1040" y1="450" x2="1040" y2="478"/><line x1="1024" y1="460" x2="1056" y2="460"/><line x1="1040" y1="478" x2="1027" y2="498"/><line x1="1040" y1="478" x2="1053" y2="498"/></g>
+<text x="1040" y="516" font-size="15" text-anchor="middle" fill="#14213D">Duty Officer</text>
+<g stroke="#1B2F6E" stroke-width="1.6" fill="none"><circle cx="70" cy="1120" r="10" fill="white"/><line x1="70" y1="1130" x2="70" y2="1158"/><line x1="54" y1="1140" x2="86" y2="1140"/><line x1="70" y1="1158" x2="57" y2="1178"/><line x1="70" y1="1158" x2="83" y2="1178"/></g>
+<text x="70" y="1196" font-size="15" text-anchor="middle" fill="#14213D">District</text>
+<text x="70" y="1211" font-size="15" text-anchor="middle" fill="#14213D">Officer</text>
+<g stroke="#1B2F6E" stroke-width="1.6" fill="none"><circle cx="1040" cy="1320" r="10" fill="white"/><line x1="1040" y1="1330" x2="1040" y2="1358"/><line x1="1024" y1="1340" x2="1056" y2="1340"/><line x1="1040" y1="1358" x2="1027" y2="1378"/><line x1="1040" y1="1358" x2="1053" y2="1378"/></g>
+<text x="1040" y="1396" font-size="15" text-anchor="middle" fill="#14213D">Rescue</text>
+<text x="1040" y="1411" font-size="15" text-anchor="middle" fill="#14213D">Team</text>
+<g stroke="#1B2F6E" stroke-width="1.6" fill="none"><circle cx="1040" cy="1475" r="10" fill="white"/><line x1="1040" y1="1485" x2="1040" y2="1513"/><line x1="1024" y1="1495" x2="1056" y2="1495"/><line x1="1040" y1="1513" x2="1027" y2="1533"/><line x1="1040" y1="1513" x2="1053" y2="1533"/></g>
+<text x="1040" y="1551" font-size="15" text-anchor="middle" fill="#14213D">Resource</text>
+<text x="1040" y="1566" font-size="15" text-anchor="middle" fill="#14213D">Owner</text>
+<g stroke="#1B2F6E" stroke-width="1.6" fill="none"><circle cx="1160" cy="1270" r="10" fill="white"/><line x1="1160" y1="1280" x2="1160" y2="1308"/><line x1="1144" y1="1290" x2="1176" y2="1290"/><line x1="1160" y1="1308" x2="1147" y2="1328"/><line x1="1160" y1="1308" x2="1173" y2="1328"/></g>
+<text x="1160" y="1346" font-size="15" text-anchor="middle" fill="#14213D">Government</text>
+<text x="1160" y="1361" font-size="15" text-anchor="middle" fill="#14213D">Body</text>
+<g stroke="#1B2F6E" stroke-width="1.6" fill="none"><circle cx="1160" cy="1395" r="10" fill="white"/><line x1="1160" y1="1405" x2="1160" y2="1433"/><line x1="1144" y1="1415" x2="1176" y2="1415"/><line x1="1160" y1="1433" x2="1147" y2="1453"/><line x1="1160" y1="1433" x2="1173" y2="1453"/></g>
+<text x="1160" y="1471" font-size="15" text-anchor="middle" fill="#14213D">Armed</text>
+<text x="1160" y="1486" font-size="15" text-anchor="middle" fill="#14213D">Forces</text>
+<g stroke="#1B2F6E" stroke-width="1.6" fill="none"><circle cx="1160" cy="1520" r="10" fill="white"/><line x1="1160" y1="1530" x2="1160" y2="1558"/><line x1="1144" y1="1540" x2="1176" y2="1540"/><line x1="1160" y1="1558" x2="1147" y2="1578"/><line x1="1160" y1="1558" x2="1173" y2="1578"/></g>
+<text x="1160" y="1596" font-size="15" text-anchor="middle" fill="#14213D">NGO</text>
+<g stroke="#1B2F6E" stroke-width="1.6" fill="none"><circle cx="1160" cy="1645" r="10" fill="white"/><line x1="1160" y1="1655" x2="1160" y2="1683"/><line x1="1144" y1="1665" x2="1176" y2="1665"/><line x1="1160" y1="1683" x2="1147" y2="1703"/><line x1="1160" y1="1683" x2="1173" y2="1703"/></g>
+<text x="1160" y="1721" font-size="15" text-anchor="middle" fill="#14213D">Private</text>
+<text x="1160" y="1736" font-size="15" text-anchor="middle" fill="#14213D">Donor</text>
+<g stroke="#1B2F6E" stroke-width="1.6" fill="none"><circle cx="70" cy="1620" r="10" fill="white"/><line x1="70" y1="1630" x2="70" y2="1658"/><line x1="54" y1="1640" x2="86" y2="1640"/><line x1="70" y1="1658" x2="57" y2="1678"/><line x1="70" y1="1658" x2="83" y2="1678"/></g>
+<text x="70" y="1696" font-size="15" text-anchor="middle" fill="#14213D">DMC Official</text>
+<g stroke="#1B2F6E" stroke-width="1.6" fill="none"><circle cx="1040" cy="1850" r="10" fill="white"/><line x1="1040" y1="1860" x2="1040" y2="1888"/><line x1="1024" y1="1870" x2="1056" y2="1870"/><line x1="1040" y1="1888" x2="1027" y2="1908"/><line x1="1040" y1="1888" x2="1053" y2="1908"/></g>
+<text x="1040" y="1926" font-size="15" text-anchor="middle" fill="#14213D">Donor</text>
+<text x="1040" y="1941" font-size="15" text-anchor="middle" fill="#14213D">Organisation</text>
+<line x1="90.0" y1="165.0" x2="183.4" y2="189.5" stroke="#1B2F6E" stroke-width="1.3"/>
+<line x1="90.0" y1="440.0" x2="264.9" y2="246.8" stroke="#1B2F6E" stroke-width="1.3"/>
+<line x1="90.0" y1="440.0" x2="244.1" y2="561.1" stroke="#1B2F6E" stroke-width="1.3"/>
+<line x1="70.0" y1="646.0" x2="70.0" y2="507.0" stroke="#1B2F6E" stroke-width="1.3" marker-end="url(#tri)"/>
+<line x1="392.7" y1="172.5" x2="500.0" y2="132.8" stroke="#1B2F6E" stroke-width="1.2" stroke-dasharray="6 4" marker-end="url(#arr)"/>
+<text x="446.3" y="147.7" font-size="13" text-anchor="middle" fill="#33415C" font-style="italic" paint-order="stroke" stroke="white" stroke-width="4">«include»</text>
+<line x1="435.0" y1="205.0" x2="745.0" y2="205.0" stroke="#1B2F6E" stroke-width="1.2" stroke-dasharray="6 4" marker-end="url(#arr)"/>
+<text x="590.0" y="200.0" font-size="13" text-anchor="middle" fill="#33415C" font-style="italic" paint-order="stroke" stroke="white" stroke-width="4">«include»</text>
+<line x1="395.1" y1="236.7" x2="497.7" y2="272.8" stroke="#1B2F6E" stroke-width="1.2" stroke-dasharray="6 4" marker-end="url(#arr)"/>
+<text x="446.4" y="249.8" font-size="13" text-anchor="middle" fill="#33415C" font-style="italic" paint-order="stroke" stroke="white" stroke-width="4">«include»</text>
+<line x1="305.0" y1="299.0" x2="305.0" y2="249.0" stroke="#1B2F6E" stroke-width="1.2" stroke-dasharray="6 4" marker-end="url(#arr)"/>
+<text x="305.0" y="269.0" font-size="13" text-anchor="middle" fill="#33415C" font-style="italic" paint-order="stroke" stroke="white" stroke-width="4">«extend»</text>
+<line x1="575.0" y1="369.0" x2="575.0" y2="336.0" stroke="#1B2F6E" stroke-width="1.2" stroke-dasharray="6 4" marker-end="url(#arr)"/>
+<text x="575.0" y="347.5" font-size="13" text-anchor="middle" fill="#33415C" font-style="italic" paint-order="stroke" stroke="white" stroke-width="4">«extend»</text>
+<line x1="1020.0" y1="460.0" x2="875.1" y2="240.0" stroke="#1B2F6E" stroke-width="1.3"/>
+<line x1="1020.0" y1="290.0" x2="693.0" y2="300.0" stroke="#1B2F6E" stroke-width="1.3"/>
+<line x1="395.1" y1="568.3" x2="497.7" y2="532.2" stroke="#1B2F6E" stroke-width="1.2" stroke-dasharray="6 4" marker-end="url(#arr)"/>
+<text x="446.4" y="545.2" font-size="13" text-anchor="middle" fill="#33415C" font-style="italic" paint-order="stroke" stroke="white" stroke-width="4">«include»</text>
+<line x1="397.6" y1="630.9" x2="495.3" y2="663.4" stroke="#1B2F6E" stroke-width="1.2" stroke-dasharray="6 4" marker-end="url(#arr)"/>
+<text x="446.5" y="642.2" font-size="13" text-anchor="middle" fill="#33415C" font-style="italic" paint-order="stroke" stroke="white" stroke-width="4">«include»</text>
+<line x1="433.8" y1="594.1" x2="745.9" y2="579.8" stroke="#1B2F6E" stroke-width="1.2" stroke-dasharray="6 4" marker-end="url(#arr)"/>
+<text x="589.9" y="581.9" font-size="13" text-anchor="middle" fill="#33415C" font-style="italic" paint-order="stroke" stroke="white" stroke-width="4">«include»</text>
+<line x1="305.0" y1="694.0" x2="305.0" y2="644.0" stroke="#1B2F6E" stroke-width="1.2" stroke-dasharray="6 4" marker-end="url(#arr)"/>
+<text x="305.0" y="664.0" font-size="13" text-anchor="middle" fill="#33415C" font-style="italic" paint-order="stroke" stroke="white" stroke-width="4">«extend»</text>
+<line x1="850.0" y1="664.0" x2="850.0" y2="611.0" stroke="#1B2F6E" stroke-width="1.2" stroke-dasharray="6 4" marker-end="url(#arr)"/>
+<text x="850.0" y="632.5" font-size="13" text-anchor="middle" fill="#33415C" font-style="italic" paint-order="stroke" stroke="white" stroke-width="4">«extend»</text>
+<line x1="850.0" y1="764.0" x2="850.0" y2="736.0" stroke="#1B2F6E" stroke-width="1.2" stroke-dasharray="6 4" marker-end="url(#arr)"/>
+<text x="850.0" y="745.0" font-size="13" text-anchor="middle" fill="#33415C" font-style="italic" paint-order="stroke" stroke="white" stroke-width="4">«extend»</text>
+<line x1="1020.0" y1="460.0" x2="905.4" y2="544.4" stroke="#1B2F6E" stroke-width="1.3"/>
+<line x1="90.0" y1="1140.0" x2="254.8" y2="1000.6" stroke="#1B2F6E" stroke-width="1.3"/>
+<line x1="90.0" y1="1140.0" x2="252.3" y2="1297.4" stroke="#1B2F6E" stroke-width="1.3"/>
+<line x1="421.6" y1="940.6" x2="471.4" y2="932.3" stroke="#1B2F6E" stroke-width="1.2" stroke-dasharray="6 4" marker-end="url(#arr)"/>
+<text x="446.5" y="931.4" font-size="13" text-anchor="middle" fill="#33415C" font-style="italic" paint-order="stroke" stroke="white" stroke-width="4">«include»</text>
+<line x1="410.9" y1="985.5" x2="482.4" y2="1002.7" stroke="#1B2F6E" stroke-width="1.2" stroke-dasharray="6 4" marker-end="url(#arr)"/>
+<text x="446.7" y="989.1" font-size="13" text-anchor="middle" fill="#33415C" font-style="italic" paint-order="stroke" stroke="white" stroke-width="4">«include»</text>
+<line x1="762.0" y1="915.0" x2="693.0" y2="915.0" stroke="#1B2F6E" stroke-width="1.2" stroke-dasharray="6 4" marker-end="url(#arr)"/>
+<text x="727.5" y="910.0" font-size="13" text-anchor="middle" fill="#33415C" font-style="italic" paint-order="stroke" stroke="white" stroke-width="4">«extend»</text>
+<line x1="305.0" y1="1054.0" x2="305.0" y2="1004.0" stroke="#1B2F6E" stroke-width="1.2" stroke-dasharray="6 4" marker-end="url(#arr)"/>
+<text x="305.0" y="1024.0" font-size="13" text-anchor="middle" fill="#33415C" font-style="italic" paint-order="stroke" stroke="white" stroke-width="4">«extend»</text>
+<line x1="397.9" y1="1305.6" x2="500.0" y2="1267.8" stroke="#1B2F6E" stroke-width="1.2" stroke-dasharray="6 4" marker-end="url(#arr)"/>
+<text x="448.9" y="1281.7" font-size="13" text-anchor="middle" fill="#33415C" font-style="italic" paint-order="stroke" stroke="white" stroke-width="4">«include»</text>
+<line x1="443.0" y1="1347.7" x2="458.9" y2="1348.6" stroke="#1B2F6E" stroke-width="1.2" stroke-dasharray="6 4" marker-end="url(#arr)"/>
+<text x="451.0" y="1343.1" font-size="13" text-anchor="middle" fill="#33415C" font-style="italic" paint-order="stroke" stroke="white" stroke-width="4">«include»</text>
+<line x1="383.9" y1="1378.0" x2="511.8" y2="1439.6" stroke="#1B2F6E" stroke-width="1.2" stroke-dasharray="6 4" marker-end="url(#arr)"/>
+<text x="447.9" y="1403.8" font-size="13" text-anchor="middle" fill="#33415C" font-style="italic" paint-order="stroke" stroke="white" stroke-width="4">«include»</text>
+<line x1="740.0" y1="1240.0" x2="693.0" y2="1240.0" stroke="#1B2F6E" stroke-width="1.2" stroke-dasharray="6 4" marker-end="url(#arr)"/>
+<text x="716.5" y="1235.0" font-size="13" text-anchor="middle" fill="#33415C" font-style="italic" paint-order="stroke" stroke="white" stroke-width="4">«extend»</text>
+<line x1="1020.0" y1="1340.0" x2="692.9" y2="1353.7" stroke="#1B2F6E" stroke-width="1.3"/>
+<line x1="1020.0" y1="1495.0" x2="689.6" y2="1478.6" stroke="#1B2F6E" stroke-width="1.3"/>
+<line x1="1140.0" y1="1290.0" x2="1060.0" y2="1495.0" stroke="#1B2F6E" stroke-width="1.3" marker-end="url(#tri)"/>
+<line x1="1140.0" y1="1415.0" x2="1060.0" y2="1495.0" stroke="#1B2F6E" stroke-width="1.3" marker-end="url(#tri)"/>
+<line x1="1140.0" y1="1540.0" x2="1060.0" y2="1495.0" stroke="#1B2F6E" stroke-width="1.3" marker-end="url(#tri)"/>
+<line x1="1140.0" y1="1665.0" x2="1060.0" y2="1495.0" stroke="#1B2F6E" stroke-width="1.3" marker-end="url(#tri)"/>
+<line x1="90.0" y1="1640.0" x2="172.3" y2="1656.5" stroke="#1B2F6E" stroke-width="1.3"/>
+<line x1="420.9" y1="1641.4" x2="476.9" y2="1630.0" stroke="#1B2F6E" stroke-width="1.2" stroke-dasharray="6 4" marker-end="url(#arr)"/>
+<text x="448.9" y="1630.7" font-size="13" text-anchor="middle" fill="#33415C" font-style="italic" paint-order="stroke" stroke="white" stroke-width="4">«include»</text>
+<line x1="420.9" y1="1688.6" x2="476.9" y2="1700.0" stroke="#1B2F6E" stroke-width="1.2" stroke-dasharray="6 4" marker-end="url(#arr)"/>
+<text x="448.9" y="1689.3" font-size="13" text-anchor="middle" fill="#33415C" font-style="italic" paint-order="stroke" stroke="white" stroke-width="4">«include»</text>
+<line x1="305.0" y1="1784.0" x2="305.0" y2="1711.0" stroke="#1B2F6E" stroke-width="1.2" stroke-dasharray="6 4" marker-end="url(#arr)"/>
+<text x="305.0" y="1742.5" font-size="13" text-anchor="middle" fill="#33415C" font-style="italic" paint-order="stroke" stroke="white" stroke-width="4">«extend»</text>
+<line x1="523.5" y1="1802.6" x2="369.3" y2="1705.5" stroke="#1B2F6E" stroke-width="1.2" stroke-dasharray="6 4" marker-end="url(#arr)"/>
+<text x="446.4" y="1749.0" font-size="13" text-anchor="middle" fill="#33415C" font-style="italic" paint-order="stroke" stroke="white" stroke-width="4">«extend»</text>
+<line x1="1020.0" y1="1870.0" x2="687.5" y2="1845.9" stroke="#1B2F6E" stroke-width="1.3"/>
+</svg>

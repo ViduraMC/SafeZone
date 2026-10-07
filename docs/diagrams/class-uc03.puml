@@ -1,0 +1,61 @@
+@startuml class-uc03
+!include style.iuml
+title UC03 Coordinate Emergency Shelters: design class diagram
+
+class ShelterCoordinationService <<application>> {
+  +sheltersInDistrict(districtId): Shelter[]
+  +nearest(point, limit): NearbyShelter[]
+  +registerShelter(input, officer): Shelter
+  +allocate(id, people, officer): AllocationResult
+  +release(id, people, officer): Shelter
+  +alternatives(id, people): Shelter[]
+  +markUnavailable(id, reason, officer): Shelter[]
+  +reopen(id, officer): Shelter
+}
+class OperationalOverviewService <<application>> {
+  +activeEvents(): DisasterEvent[]
+  +overview(districtId): OperationalOverview
+}
+class Shelter <<entity>> {
+  +capacity: number
+  -occupancy: number
+  +status: ShelterStatus
+  +admit(people)
+  +release(people)
+  +markUnavailable(reason)
+  +reopen()
+}
+enum ShelterStatus {
+  AVAILABLE
+  NEAR_CAPACITY
+  FULL
+  UNAVAILABLE
+}
+class ShelterCapacityError {
+  +remaining: number
+}
+class OccupancySnapshot {
+  +occupancy
+  +capacity
+  +at
+}
+class FieldUpdateRecorder {
+  +record(entityId, description): boolean
+}
+class ResourceOwner {
+  +name
+  +type: OwnerType
+}
+class DisasterEvent
+class InboxService
+
+ShelterCoordinationService --> Shelter
+ShelterCoordinationService --> OccupancySnapshot : records
+ShelterCoordinationService --> FieldUpdateRecorder : offline sync
+ShelterCoordinationService --> InboxService : notify officers
+Shelter --> ShelterStatus
+Shelter ..> ShelterCapacityError : throws
+Shelter --> "1" ResourceOwner : managed by
+OperationalOverviewService --> DisasterEvent
+OperationalOverviewService --> Shelter
+@enduml

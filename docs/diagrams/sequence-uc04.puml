@@ -1,0 +1,46 @@
+@startuml sequence-uc04
+!include style.iuml
+autonumber
+title UC04 Dispatch Rescue Teams & Relief Resources: respond at Hanwella bridge
+actor "District Officer" as DO
+boundary "TeamsScreen / ReliefScreen" as UI
+control "RescueDispatchService" as RD
+entity "RescueTeam" as T
+participant "InboxService" as IN
+actor "Rescue Team" as RT
+control "ReliefDistributionService" as RL
+entity "ReliefStock" as ST
+participant "FieldUpdateRecorder" as FU
+
+DO -> UI : open Teams for the district
+UI -> RD : availableInDistrict(districtId)
+opt no suitable team in the district (A1)
+  UI -> RD : availableElsewhere(districtId)
+end
+DO -> UI : select team, enter location
+UI -> RD : dispatch(teamId, request, officer)
+RD -> T : dispatch(assignment)
+RD -> FU : record(update)
+RD -> IN : notify team members
+IN --> RT : new assignment
+RT -> RD : updateStatus(EN_ROUTE)
+RD -> T : updateStatus(EN_ROUTE)
+alt invalid jump, e.g. STANDBY to ON_SCENE (E3)
+  T --> RD : DomainError
+end
+RT -> RD : updateStatus(ON_SCENE)
+RT -> RD : completeMission(teamId, rescued, notes)
+RD -> T : completeMission() : RETURNING
+note right of T : MissionRecord feeds the\nUC05 rescue operations report
+DO -> UI : open Relief
+UI -> RL : availableStock(ownerTypes) (A2)
+DO -> UI : stock, quantity, destination shelter
+UI -> RL : distribute(request, officer)
+RL -> ST : withdraw(quantity)
+alt quantity above available (E1)
+  ST --> UI : InsufficientStockError(available)
+else recorded
+  RL -> FU : record(update)
+  RL --> UI : ReliefDistribution
+end
+@enduml

@@ -1,0 +1,94 @@
+@startuml class-overview
+!include style.iuml
+skinparam ClassFontSize 12
+skinparam packageStyle rectangle
+left to right direction
+
+package "core (shared kernel)" as core {
+  class UserAccount
+  enum Role
+  class DisasterEvent
+  class HazardTypeRegistry
+  class GeoDirectory
+  class OrganisationDirectory
+  class ResourceOwner
+  class SyncService
+  class FieldUpdateRecorder
+  class InboxService
+  interface "Repository<T>" as Repo
+  interface EventBus
+}
+
+package "UC01 Issue Hazard Warning" as uc1 {
+  class AlertService
+  class HazardAlert
+  interface TargetArea
+  class AlertBroadcaster
+  interface ChannelSelectionPolicy
+  interface NotificationChannel
+  class DeliveryRecord
+  interface VerifiedReportFeed
+}
+
+package "UC02 Submit & Verify Hazard Report" as uc2 {
+  class ReportSubmissionService
+  class ReportVerificationService
+  class GroundReport
+  class ReportReview
+  interface LocationProvider
+}
+
+package "UC03 Coordinate Emergency Shelters" as uc3 {
+  class ShelterCoordinationService
+  class OperationalOverviewService
+  class Shelter
+  class OccupancySnapshot
+}
+
+package "UC04 Dispatch Rescue Teams & Relief" as uc4 {
+  class RescueDispatchService
+  class ReliefDistributionService
+  class RescueTeam
+  class MissionRecord
+  class ReliefStock
+  class ReliefDistribution
+}
+
+package "UC05 Generate Disaster Response Reports" as uc5 {
+  class DisasterReportGenerator
+  interface ReportSectionBuilder
+  interface ReportAccessPolicy
+  interface ReportExporter
+  class ReportingPeriod
+}
+
+UserAccount --> "1..*" Role
+AlertService --> HazardAlert
+HazardAlert --> TargetArea
+AlertService --> AlertBroadcaster
+AlertBroadcaster --> ChannelSelectionPolicy
+AlertBroadcaster o-- "1..*" NotificationChannel
+AlertBroadcaster --> DeliveryRecord
+AlertService --> VerifiedReportFeed
+ReportVerificationService ..|> VerifiedReportFeed
+ReportSubmissionService --> GroundReport
+ReportSubmissionService --> LocationProvider
+ReportSubmissionService --> SyncService
+GroundReport *-- "0..*" ReportReview
+ShelterCoordinationService --> Shelter
+ShelterCoordinationService --> OccupancySnapshot
+ShelterCoordinationService --> FieldUpdateRecorder
+Shelter --> ResourceOwner
+RescueDispatchService --> RescueTeam
+RescueTeam *-- "0..*" MissionRecord
+ReliefDistributionService --> ReliefStock
+ReliefDistributionService --> ReliefDistribution
+ReliefDistributionService --> OrganisationDirectory
+RescueDispatchService --> FieldUpdateRecorder
+FieldUpdateRecorder --> SyncService
+OperationalOverviewService --> DisasterEvent
+DisasterReportGenerator o-- "1..*" ReportSectionBuilder
+DisasterReportGenerator o-- "1..*" ReportAccessPolicy
+DisasterReportGenerator --> ReportingPeriod
+DisasterReportGenerator ..> ReportExporter
+@enduml

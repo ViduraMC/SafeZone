@@ -1,0 +1,86 @@
+@startuml class-uc01
+!include style.iuml
+title UC01 Issue Hazard Warning: design class diagram
+
+class AlertService <<application>> {
+  +dashboard(): WarningDashboard
+  +preview(draft): WarningPreview
+  +issueWarning(draft, officer): WarningResult
+  +escalateWarning(id, level, reason, officer, reportIds)
+  +resolveWarning(id, officer): HazardAlert
+  +retryQueuedDeliveries(): RetrySummary
+  +deliverySummary(id): DeliverySummary
+}
+class AlertDraftValidator {
+  +validate(draft)
+}
+class HazardAlert <<entity>> {
+  -status: AlertStatus
+  -severity: SeverityLevel
+  +validFrom / validUntil: Date
+  +activate(at)
+  +escalate(to, reason, by, at, reportIds)
+  +resolve(at)
+  +isActiveAt(at): boolean
+}
+enum AlertStatus {
+  DRAFT
+  ACTIVE
+  ESCALATED
+  RESOLVED
+}
+interface TargetArea <<strategy>> {
+  +resolveDistrictIds(geo): string[]
+  +describe(geo): string
+}
+class DistrictTarget
+class RiverBasinTarget
+class AlertBroadcaster {
+  +broadcast(alert, recipients): BroadcastSummary
+  +retryQueued(lookup): RetrySummary
+}
+interface ChannelSelectionPolicy <<strategy>> {
+  +plan(severity, recipient): ChannelPlan
+}
+class SeverityBasedChannelPolicy
+interface NotificationChannel {
+  +kind: ChannelKind
+  +canReach(user): boolean
+  +send(message, user): DeliveryOutcome
+}
+class PushNotificationChannel
+class SmsChannel
+interface SmsGateway {
+  +send(phone, text): DeliveryOutcome
+}
+class AlertMessageFormatter {
+  +format(alert, isUpdate): AlertContent
+}
+class DeliveryRecord <<entity>> {
+  +channel: ChannelKind
+  -status: DELIVERED | FAILED | QUEUED
+  -attempts: number
+  +recordRetrySuccess(at)
+  +recordRetryFailure(at, reason)
+}
+interface VerifiedReportFeed <<port>> {
+  +listVerified(districtIds): VerifiedReportSummary[]
+}
+
+AlertService --> AlertDraftValidator
+AlertService --> HazardAlert : creates
+AlertService --> AlertBroadcaster
+AlertService --> VerifiedReportFeed : provided by UC02
+HazardAlert --> AlertStatus
+HazardAlert --> "1" TargetArea
+TargetArea <|.. DistrictTarget
+TargetArea <|.. RiverBasinTarget
+AlertBroadcaster --> ChannelSelectionPolicy
+ChannelSelectionPolicy <|.. SeverityBasedChannelPolicy
+AlertBroadcaster o-- "1..*" NotificationChannel
+NotificationChannel <|.. PushNotificationChannel
+NotificationChannel <|.. SmsChannel
+SmsChannel --> SmsGateway
+AlertBroadcaster --> AlertMessageFormatter
+HazardAlert "1" -- "0..*" DeliveryRecord
+@enduml
