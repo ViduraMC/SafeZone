@@ -40,4 +40,14 @@ describe('React Native screens (presentation layer smoke tests)', () => {
     await press('Dismiss Alert');
     expect(screen.getByText('Hello, Nimali')).toBeTruthy();
   });
+
+  it('highlights missing fields on the hazard warning form and clears them on input (UC01 E1)', async () => {
+    await renderAs(PERSONA_IDS.dmcOfficer, '/warnings/new');
+    await press('Validate & Review');
+    expect(screen.getByText('Select a hazard type')).toBeTruthy();
+    expect(screen.getByText('Enter a headline')).toBeTruthy();
+
+    await fireEvent.changeText(screen.getByLabelText('Headline'), 'Flash flood in Colombo');
+    expect(screen.queryByText('Enter a headline')).toBeNull();
+  });
 });
