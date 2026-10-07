@@ -7,10 +7,12 @@ import { homeRouteFor } from './navigation';
 import { linking, routeNameForPath, type RouteName } from './paths';
 import { CoordinationScopeProvider } from './screens/common/CoordinationScope';
 import { commonScreens } from './screens/common';
+import { warningScreens } from './screens/warnings';
 
 /** Screens of the five use cases, each module registers its own. */
 const SCREENS: Partial<Record<RouteName, ComponentType>> = {
   ...commonScreens,
+  ...warningScreens, // UC01
 };
 
 const Stack = createNativeStackNavigator();
