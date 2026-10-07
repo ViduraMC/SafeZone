@@ -76,4 +76,11 @@ describe('React Native screens (presentation layer smoke tests)', () => {
     await press('Confirm allocation');
     expect(screen.getByText(/Only \d+ available/)).toBeTruthy();
   });
+
+  it('stops a donor from requesting restricted statistics (UC05 E3)', async () => {
+    await renderAs(PERSONA_IDS.donor, '/reports');
+    await fireEvent.press(screen.getByRole('checkbox', { name: 'Shelter Occupancy' }));
+    await press('Generate report');
+    expect(screen.getByText(/Donor organisations can only view/)).toBeTruthy();
+  });
 });
