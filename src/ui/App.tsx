@@ -9,12 +9,14 @@ import { CoordinationScopeProvider } from './screens/common/CoordinationScope';
 import { commonScreens } from './screens/common';
 import { warningScreens } from './screens/warnings';
 import { reportScreens } from './screens/reports';
+import { shelterScreens } from './screens/shelters';
 
 /** Screens of the five use cases, each module registers its own. */
 const SCREENS: Partial<Record<RouteName, ComponentType>> = {
   ...commonScreens,
   ...warningScreens, // UC01
   ...reportScreens, // UC02
+  ...shelterScreens, // UC03
 };
 
 const Stack = createNativeStackNavigator();
