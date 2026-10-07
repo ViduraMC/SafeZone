@@ -1,12 +1,16 @@
 import { useState } from 'react';
+import { Pressable, StyleSheet } from 'react-native';
 import { InsufficientStockError } from '@/modules/dispatch/domain/Relief';
 import { OWNER_TYPE_LABELS, OwnerType } from '@/core/organisations/ResourceOwner';
 import { useSafeZone } from '../../AppContext';
-import { Button, Card, ChipGroup, Field, Notice, SectionTitle } from '../../components/Primitives';
+import { Button, Card, ChipGroup, Field, Notice, NumberField, Row, SectionTitle, SelectField, Txt } from '../../components/Primitives';
 import { Screen } from '../../components/Shell';
 import { timeAgo, titleCase } from '../../lib/format';
 import { useAction } from '../../lib/useAction';
+import { colors } from '../../theme';
 import { ScopeSelector, useCoordinationScope } from '../common/CoordinationScope';
+
+const GENERAL = 'GENERAL';
 
 /** UC04 steps 9-12 with A2 (filter by owner) and E1 (insufficient supplies). */
 export function ReliefScreen() {
@@ -15,7 +19,7 @@ export function ReliefScreen() {
   const [ownerTypes, setOwnerTypes] = useState<OwnerType[]>([]);
   const [stockId, setStockId] = useState('');
   const [quantity, setQuantity] = useState(50);
-  const [shelterId, setShelterId] = useState('');
+  const [shelterId, setShelterId] = useState(GENERAL);
   const [shortage, setShortage] = useState<string>();
   const [done, setDone] = useState<string>();
   const action = useAction();
@@ -29,7 +33,7 @@ export function ReliefScreen() {
     setDone(undefined);
     const result = await action.run(() => {
       try {
-        return app.relief.distribute({ stockId, quantity, districtId, shelterId: shelterId || undefined, eventId }, user);
+        return app.relief.distribute({ stockId, quantity, districtId, shelterId: shelterId === GENERAL ? undefined : shelterId, eventId }, user);
       } catch (error) {
         if (error instanceof InsufficientStockError) {
           setShortage(`Only ${error.available} available. Reduce the quantity or choose stock from another organisation.`);
@@ -49,57 +53,66 @@ export function ReliefScreen() {
         selected={ownerTypes}
         onToggle={(t) => setOwnerTypes(ownerTypes.includes(t) ? ownerTypes.filter((x) => x !== t) : [...ownerTypes, t])}
       />
-      <div className="stock-list">
-        {stock.map(({ stock: s, owner }) => (
-          <button key={s.id} type="button" className={`stock ${stockId === s.id ? 'is-active' : ''}`} onClick={() => setStockId(s.id)}>
-            <span className="stock__name">{s.itemName}</span>
-            <span className="muted small">
-              {owner.name} • {titleCase(s.category)}
-            </span>
-            <span className="stock__qty">
+      <SectionTitle>Available stock</SectionTitle>
+      {stock.map(({ stock: s, owner }) => (
+        <Pressable
+          key={s.id}
+          accessibilityRole="button"
+          accessibilityLabel={`${s.itemName}, ${owner.name}`}
+          accessibilityState={{ selected: stockId === s.id }}
+          onPress={() => setStockId(s.id)}
+          style={[styles.stock, stockId === s.id && styles.stockActive]}
+        >
+          <Row>
+            <Txt strong>{s.itemName}</Txt>
+            <Txt strong color={colors.navy}>
               {s.available.toLocaleString()} {s.unit}
-            </span>
-          </button>
-        ))}
-      </div>
+            </Txt>
+          </Row>
+          <Txt small muted>
+            {owner.name} • {titleCase(s.category)}
+          </Txt>
+        </Pressable>
+      ))}
 
       {selected && (
         <Card tone="info">
-          <p className="strong">
+          <Txt strong>
             Distribute {selected.stock.itemName} ({selected.owner.name})
-          </p>
-          <Field label={`Quantity (${selected.stock.unit})`} htmlFor="qty" hint={`${selected.stock.available} available`}>
-            <input id="qty" type="number" min={1} value={quantity} onChange={(e) => setQuantity(Number(e.target.value))} />
+          </Txt>
+          <Field label={`Quantity (${selected.stock.unit})`} hint={`${selected.stock.available} available`}>
+            <NumberField label="Quantity" value={quantity} onChange={setQuantity} />
           </Field>
-          <Field label="Destination shelter (optional)" htmlFor="dest">
-            <select id="dest" value={shelterId} onChange={(e) => setShelterId(e.target.value)}>
-              <option value="">{app.geo.districtName(districtId)} District (general)</option>
-              {shelters.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.name}
-                </option>
-              ))}
-            </select>
+          <Field label="Destination shelter (optional)">
+            <SelectField
+              label="Destination shelter"
+              value={shelterId}
+              onChange={setShelterId}
+              options={[{ value: GENERAL, label: `${app.geo.districtName(districtId)} District (general)` }, ...shelters.map((s) => ({ value: s.id, label: s.name }))]}
+            />
           </Field>
           {shortage && <Notice tone="warning">{shortage}</Notice>}
           {action.error && !shortage && <Notice tone="danger">{action.error}</Notice>}
-          <Button block onClick={distribute} disabled={action.busy}>
-            Confirm allocation
-          </Button>
+          <Button block onPress={() => void distribute()} disabled={action.busy}>Confirm allocation</Button>
         </Card>
       )}
       {done && <Notice tone="success">{done}</Notice>}
 
       <SectionTitle>Recent distributions</SectionTitle>
-      {recent.length === 0 && <p className="muted small">Nothing distributed to this district yet.</p>}
+      {recent.length === 0 && <Txt small muted>Nothing distributed to this district yet.</Txt>}
       {recent.map((d) => (
-        <p key={d.id} className="small">
-          <strong>
+        <Txt key={d.id} small>
+          <Txt small strong>
             {d.quantity} {d.unit}
-          </strong>{' '}
+          </Txt>{' '}
           {d.itemName} • {app.organisations.get(d.ownerId).name} • {timeAgo(d.distributedAt, app.clock.now())}
-        </p>
+        </Txt>
       ))}
     </Screen>
   );
 }
+
+const styles = StyleSheet.create({
+  stock: { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, borderRadius: 12, padding: 12, marginBottom: 8, gap: 2 },
+  stockActive: { borderColor: colors.navy, borderWidth: 2, backgroundColor: colors.infoBg },
+});

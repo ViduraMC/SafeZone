@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Linking, StyleSheet, View } from 'react-native';
 import type { Coordinates } from '@/core/geo/District';
 import { ShelterStatus } from '@/modules/shelters/domain/Shelter';
 import { useSafeZone } from '../../AppContext';
-import { Badge, Card, ProgressBar } from '../../components/Primitives';
+import { Badge, Button, Card, Chip, KeyValue, LinkText, Notice, ProgressBar, Row, SectionTitle, Txt } from '../../components/Primitives';
 import { Screen } from '../../components/Shell';
 import { percent, titleCase } from '../../lib/format';
+import { useNav, useParam } from '../../lib/useNav';
 
 const STATUS_TONE = {
   [ShelterStatus.AVAILABLE]: 'success',
@@ -18,15 +19,14 @@ export function ShelterStatusBadge({ status }: { status: ShelterStatus }) {
   return <Badge tone={STATUS_TONE[status]}>{status === ShelterStatus.AVAILABLE ? 'OPEN' : titleCase(status).toUpperCase()}</Badge>;
 }
 
-function directionsUrl(point: Coordinates): string {
-  return `https://www.google.com/maps/dir/?api=1&destination=${point.latitude},${point.longitude}`;
+function openDirections(point: Coordinates): void {
+  void Linking.openURL(`https://www.google.com/maps/dir/?api=1&destination=${point.latitude},${point.longitude}`);
 }
 
 /** Uses the device GPS, falling back to the home district centre when GPS is off. */
 function useCurrentPosition(): Coordinates {
   const { app, user } = useSafeZone();
-  const homeCentre = () => app.geo.getDistrict(user.homeDistrictId).centroid;
-  const [position, setPosition] = useState<Coordinates>(homeCentre);
+  const [position, setPosition] = useState<Coordinates>(() => app.geo.getDistrict(user.homeDistrictId).centroid);
   useEffect(() => {
     const fallback = app.geo.getDistrict(user.homeDistrictId).centroid;
     app.gps.currentPosition().then(setPosition, () => setPosition(fallback));
@@ -37,6 +37,7 @@ function useCurrentPosition(): Coordinates {
 /** Citizen-facing "Nearest Shelter" view backed by UC03 occupancy data. */
 export function SheltersScreen() {
   const { app } = useSafeZone();
+  const nav = useNav();
   const position = useCurrentPosition();
   const nearby = app.shelters.nearest(position, 8);
 
@@ -44,20 +45,20 @@ export function SheltersScreen() {
     <Screen title="Nearest Shelters" subtitle="Live occupancy from district coordination">
       {nearby.map(({ shelter, distanceKm }, index) => (
         <Card key={shelter.id} tone={index === 0 ? 'info' : undefined}>
-          <div className="list-card__top">
-            <span className="muted small">{index === 0 ? 'Nearest shelter' : `${app.geo.districtName(shelter.districtId)} District`}</span>
-            <span className="small strong">{distanceKm.toFixed(1)} km away</span>
-          </div>
-          <Link to={`/shelters/${shelter.id}`} className="list-card__title link-plain">{shelter.name}</Link>
-          <p className="muted small">{shelter.address}</p>
-          <div className="list-card__top">
-            <span className="small">Occupancy ({shelter.occupancy}/{shelter.capacity})</span>
+          <Row>
+            <Txt small muted>{index === 0 ? 'Nearest shelter' : `${app.geo.districtName(shelter.districtId)} District`}</Txt>
+            <Txt small strong>{distanceKm.toFixed(1)} km away</Txt>
+          </Row>
+          <LinkText onPress={() => nav.go(`/shelters/${shelter.id}`)}>{shelter.name}</LinkText>
+          <Txt small muted>{shelter.address}</Txt>
+          <Row>
+            <Txt small>
+              Occupancy ({shelter.occupancy}/{shelter.capacity})
+            </Txt>
             <ShelterStatusBadge status={shelter.status} />
-          </div>
+          </Row>
           <ProgressBar ratio={shelter.occupancyRatio} />
-          <a className="btn btn--primary btn--block" href={directionsUrl(shelter.location)} target="_blank" rel="noreferrer">
-            Get Directions
-          </a>
+          <Button block onPress={() => openDirections(shelter.location)}>Get Directions</Button>
         </Card>
       ))}
     </Screen>
@@ -65,42 +66,40 @@ export function SheltersScreen() {
 }
 
 export function ShelterDetailScreen() {
-  const { shelterId = '' } = useParams();
+  const shelterId = useParam('shelterId');
   const { app } = useSafeZone();
   const shelter = app.shelters.getShelter(shelterId);
   const owner = app.organisations.get(shelter.ownerId);
 
   return (
-    <Screen title={shelter.name} subtitle={shelter.address} back>
-      <div className="detail-head">
-        <ShelterStatusBadge status={shelter.status} />
-      </div>
-      <Card>
-        <dl className="kv">
-          <dt>Current Capacity</dt>
-          <dd>
-            {shelter.occupancy} / {shelter.capacity} occupied ({percent(shelter.occupancyRatio)})
-          </dd>
-          <dt>Emergency Desk Phone</dt>
-          <dd>{shelter.contactPhone}</dd>
-          <dt>Managed by</dt>
-          <dd>{owner.name}</dd>
-        </dl>
+    <Screen title={shelter.name} subtitle={shelter.address} back="/shelters">
+      <ShelterStatusBadge status={shelter.status} />
+      <Card style={styles.gap}>
+        <KeyValue
+          rows={[
+            ['Current Capacity', `${shelter.occupancy} / ${shelter.capacity} occupied (${percent(shelter.occupancyRatio)})`],
+            ['Emergency Desk Phone', shelter.contactPhone],
+            ['Managed by', owner.name],
+          ]}
+        />
         <ProgressBar ratio={shelter.occupancyRatio} />
       </Card>
-      {shelter.unavailableReason && <p className="notice notice--danger">Closed: {shelter.unavailableReason}</p>}
-      <h3 className="caps">Available facilities</h3>
-      <div className="chips">
+      {shelter.unavailableReason ? <Notice tone="danger">{`Closed: ${shelter.unavailableReason}`}</Notice> : null}
+      <SectionTitle>Available facilities</SectionTitle>
+      <View style={styles.chips}>
         {shelter.facilities.map((f) => (
-          <span key={f} className="chip chip--static">{f}</span>
+          <Chip key={f}>{f}</Chip>
         ))}
-      </div>
-      <a className="btn btn--primary btn--block" href={directionsUrl(shelter.location)} target="_blank" rel="noreferrer">
-        Get Live Directions
-      </a>
-      <a className="btn btn--secondary btn--block" href={`tel:${shelter.contactPhone.replace(/\s/g, '')}`}>
+      </View>
+      <Button block onPress={() => openDirections(shelter.location)}>Get Live Directions</Button>
+      <Button block variant="secondary" icon="phone" onPress={() => void Linking.openURL(`tel:${shelter.contactPhone.replace(/\s/g, '')}`)}>
         Call Shelter Desk
-      </a>
+      </Button>
     </Screen>
   );
 }
+
+const styles = StyleSheet.create({
+  gap: { marginTop: 12 },
+  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 14 },
+});

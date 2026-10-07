@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { Platform, Share, StyleSheet, View } from 'react-native';
 import { hasRole, Role } from '@/core/users/UserAccount';
 import { DONOR_CATEGORIES } from '@/modules/analytics/application/ReportAccessPolicy';
 import type { ReportExporter } from '@/modules/analytics/application/ReportExporter';
@@ -6,22 +7,28 @@ import { REPORT_CATEGORY_LABELS, ReportCategory } from '@/modules/analytics/doma
 import type { DisasterResponseReport, ReportSection } from '@/modules/analytics/domain/ReportSections';
 import { OWNER_TYPE_LABELS, type OwnerType } from '@/core/organisations/ResourceOwner';
 import { useSafeZone } from '../../AppContext';
-import { Button, Card, ChipGroup, Field, Notice, SectionTitle, SeverityBadge, StatTile } from '../../components/Primitives';
+import { Button, ButtonRow, Card, ChipGroup, Field, Notice, Row, SectionTitle, SelectField, SeverityBadge, StatTile, Stats, TextField, Txt } from '../../components/Primitives';
 import { Screen } from '../../components/Shell';
 import { formatDate, formatDateTime, percent, titleCase, toDateInputValue } from '../../lib/format';
 import { useAction } from '../../lib/useAction';
+import { colors } from '../../theme';
 import { BarList, OccupancyChart } from './Charts';
 
 const ALL_CATEGORIES = Object.values(ReportCategory);
 
-function download(exporter: ReportExporter, report: DisasterResponseReport, content: string) {
-  const blob = new Blob([content], { type: exporter.mimeType });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = `${report.id}-${report.eventName.replace(/\W+/g, '-')}.${exporter.fileExtension}`;
-  link.click();
-  URL.revokeObjectURL(url);
+/** Hands the exported file to the phone's share sheet (or downloads it on the web build). */
+async function shareExport(exporter: ReportExporter, report: DisasterResponseReport, content: string): Promise<void> {
+  const fileName = `${report.id}-${report.eventName.replace(/\W+/g, '-')}.${exporter.fileExtension}`;
+  if (Platform.OS === 'web') {
+    const url = URL.createObjectURL(new Blob([content], { type: exporter.mimeType }));
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = fileName;
+    link.click();
+    URL.revokeObjectURL(url);
+    return;
+  }
+  await Share.share({ title: fileName, message: content });
 }
 
 /** UC05 main flow steps 1-17 with A1-A4 and E1-E4. */
@@ -50,27 +57,18 @@ export function ReportsScreen() {
 
   const generate = async () => {
     const result = await action.run(() =>
-      app.reportGenerator.generate(
-        { eventId, categories, districtIds, from: new Date(`${from}T00:00:00`), to: new Date(`${to}T23:59:59`) },
-        user,
-      ),
+      app.reportGenerator.generate({ eventId, categories, districtIds, from: new Date(`${from}T00:00:00`), to: new Date(`${to}T23:59:59`) }, user),
     );
     if (result) setReport(result);
   };
 
-  if (report) return <ReportView report={report} onBack={() => setReport(undefined)} onRegenerate={generate} />;
+  if (report) return <ReportView report={report} onBack={() => setReport(undefined)} onRegenerate={() => void generate()} />;
 
   const errors = action.fieldErrors;
   return (
     <Screen title="Disaster Response Reports" subtitle={isDonor ? 'Contribution report for your organisation' : 'Post-event statistical analysis'}>
-      <Field label="Disaster event" htmlFor="event">
-        <select id="event" value={eventId} onChange={(e) => selectEvent(e.target.value)}>
-          {events.map((e) => (
-            <option key={e.id} value={e.id}>
-              {e.name} {e.endedAt ? '(ended)' : '(ongoing)'}
-            </option>
-          ))}
-        </select>
+      <Field label="Disaster event">
+        <SelectField label="Disaster event" value={eventId} onChange={selectEvent} options={events.map((e) => ({ value: e.id, label: `${e.name} ${e.endedAt ? '(ended)' : '(ongoing)'}` }))} />
       </Field>
       <Field label="Report information" error={errors.categories} hint={isDonor ? 'Donor organisations can view the distribution of their own contributions.' : undefined}>
         <ChipGroup<ReportCategory>
@@ -83,7 +81,7 @@ export function ReportsScreen() {
           }}
         />
       </Field>
-      <Field label="Districts" error={errors.districtIds} hint="None selected = all districts affected by the event">
+      <Field label="Districts" error={errors.districtIds} hint="None selected means all districts affected by the event">
         <ChipGroup
           label="Districts"
           options={(event?.districtIds ?? []).map((id) => ({ value: id, label: app.geo.districtName(id) }))}
@@ -91,23 +89,35 @@ export function ReportsScreen() {
           onToggle={(id) => setDistrictIds(districtIds.includes(id) ? districtIds.filter((x) => x !== id) : [...districtIds, id])}
         />
       </Field>
-      <Field label="Reporting period" error={errors.period}>
-        <div className="date-range">
-          <input type="date" aria-label="From" value={from} onChange={(e) => {
-              setFrom(e.target.value);
-              action.clearFields('period');
-            }} />
-          <span>to</span>
-          <input type="date" aria-label="To" value={to} onChange={(e) => {
-              setTo(e.target.value);
-              action.clearFields('period');
-            }} />
-        </div>
+      <Field label="Reporting period (YYYY-MM-DD)" error={errors.period}>
+        <View style={styles.dateRange}>
+          <View style={styles.flex}>
+            <TextField
+              label="From"
+              value={from}
+              invalid={!!errors.period}
+              onChangeText={(text) => {
+                setFrom(text);
+                action.clearFields('period');
+              }}
+            />
+          </View>
+          <Txt muted>to</Txt>
+          <View style={styles.flex}>
+            <TextField
+              label="To"
+              value={to}
+              invalid={!!errors.period}
+              onChangeText={(text) => {
+                setTo(text);
+                action.clearFields('period');
+              }}
+            />
+          </View>
+        </View>
       </Field>
       {action.error && <Notice tone="danger">{action.error}</Notice>}
-      <Button block onClick={generate} disabled={action.busy}>
-        Generate report
-      </Button>
+      <Button block onPress={() => void generate()} disabled={action.busy}>Generate report</Button>
     </Screen>
   );
 }
@@ -118,38 +128,30 @@ function ReportView({ report, onBack, onRegenerate }: { report: DisasterResponse
   return (
     <Screen title="Report generated" subtitle={report.eventName}>
       <Card>
-        <p className="small">
+        <Txt small>
           {report.id} • {report.districtIds.map(names.districtName).join(', ')}
-          <br />
-          {formatDate(report.periodFrom)} - {formatDate(report.periodTo)} • generated {formatDateTime(report.generatedAt)}
-        </p>
+        </Txt>
+        <Txt small muted>
+          {formatDate(report.periodFrom)} to {formatDate(report.periodTo)} • generated {formatDateTime(report.generatedAt)}
+        </Txt>
       </Card>
       {report.notices.map((notice) => (
-        <Notice key={notice} tone="warning">
-          {notice} The report may be incomplete.
-        </Notice>
+        <Notice key={notice} tone="warning">{`${notice} The report may be incomplete.`}</Notice>
       ))}
       {report.sections.map((section) => (
         <SectionView key={section.category} section={section} />
       ))}
-      <div className="button-row no-print">
+      <ButtonRow>
         {app.exporters.map((exporter) => (
-          <Button key={exporter.label} variant="secondary" onClick={() => download(exporter, report, exporter.export(report, names))}>
-            Export {exporter.label}
+          <Button key={exporter.label} variant="secondary" onPress={() => void shareExport(exporter, report, exporter.export(report, names))}>
+            {`Export ${exporter.label}`}
           </Button>
         ))}
-        <Button variant="secondary" onClick={() => window.print()}>
-          Print / PDF
-        </Button>
-      </div>
-      <div className="button-row no-print">
-        <Button variant="ghost" onClick={onBack}>
-          Change criteria
-        </Button>
-        <Button variant="ghost" onClick={onRegenerate}>
-          Regenerate
-        </Button>
-      </div>
+      </ButtonRow>
+      <ButtonRow>
+        <Button variant="ghost" onPress={onBack}>Change criteria</Button>
+        <Button variant="ghost" onPress={onRegenerate}>Regenerate</Button>
+      </ButtonRow>
     </Screen>
   );
 }
@@ -162,48 +164,48 @@ function SectionView({ section }: { section: ReportSection }) {
       return (
         <>
           <SectionTitle>Alert timeline</SectionTitle>
-          <div className="stats">
+          <Stats>
             <StatTile label="Issued" value={section.totals.issued} />
             <StatTile label="Escalated" value={section.totals.escalated} />
             <StatTile label="Resolved" value={section.totals.resolved} />
-          </div>
-          <ol className="timeline">
-            {section.entries.map((entry) => (
-              <li key={`${entry.alertId}-${entry.action}-${entry.at.toISOString()}`}>
-                <span className="muted small">{formatDateTime(entry.at)}</span>
-                <span>
-                  <SeverityBadge severity={entry.severity} /> <strong>{titleCase(entry.action)}</strong> {entry.title}
-                </span>
-                {entry.note && <span className="muted small">{entry.note}</span>}
-              </li>
-            ))}
-          </ol>
+          </Stats>
+          {section.entries.map((entry) => (
+            <View key={`${entry.alertId}-${entry.action}-${entry.at.toISOString()}`} style={styles.timelineItem}>
+              <Txt small muted>{formatDateTime(entry.at)}</Txt>
+              <Row style={styles.start}>
+                <SeverityBadge severity={entry.severity} />
+                <Txt small strong>{titleCase(entry.action)}</Txt>
+              </Row>
+              <Txt small>{entry.title}</Txt>
+              {entry.note ? <Txt small muted>{entry.note}</Txt> : null}
+            </View>
+          ))}
         </>
       );
     case ReportCategory.CITIZENS_REACHED:
       return (
         <>
           <SectionTitle>Citizens reached</SectionTitle>
-          <div className="stats">
+          <Stats>
             <StatTile label="Targeted" value={section.targeted} />
             <StatTile label="Reached" value={section.reached} />
             <StatTile label="Delivery rate" value={percent(section.reachRate)} />
-          </div>
+          </Stats>
           <BarList rows={section.byDistrict.map((d) => ({ label: name(d.districtId), value: d.reached, max: Math.max(1, d.targeted), caption: `${d.reached}/${d.targeted}` }))} />
-          <p className="muted small">
+          <Txt small muted>
             Deliveries: {Object.entries(section.deliveriesByChannel).map(([channel, n]) => `${channel} ${n}`).join(' • ') || 'none'}
-          </p>
+          </Txt>
         </>
       );
     case ReportCategory.SHELTER_OCCUPANCY:
       return (
         <>
           <SectionTitle>Shelter occupancy over time</SectionTitle>
-          <div className="stats">
+          <Stats>
             <StatTile label="Peak sheltered" value={section.peakTotalOccupancy} />
             <StatTile label="Capacity" value={section.totalCapacity} />
             <StatTile label="Peak use" value={percent(section.peakUtilisation)} />
-          </div>
+          </Stats>
           <Card>
             <OccupancyChart shelters={section.shelters} capacity={section.totalCapacity} />
           </Card>
@@ -214,48 +216,47 @@ function SectionView({ section }: { section: ReportSection }) {
       return (
         <>
           <SectionTitle>Resource distribution by district</SectionTitle>
-          {section.restrictedToOwnerId && <Notice tone="info">Showing only resources contributed by {app.organisations.get(section.restrictedToOwnerId).name}.</Notice>}
+          {section.restrictedToOwnerId && <Notice tone="info">{`Showing only resources contributed by ${app.organisations.get(section.restrictedToOwnerId).name}.`}</Notice>}
           <BarList rows={Object.entries(section.totalsByDistrict).map(([id, qty]) => ({ label: name(id), value: qty }))} />
-          <p className="caps small muted">By contributor</p>
+          <Txt caps small muted>By contributor</Txt>
           <BarList rows={section.byOwner.map((o) => ({ label: `${o.ownerName} (${OWNER_TYPE_LABELS[o.ownerType as OwnerType] ?? o.ownerType})`, value: o.quantity }))} />
-          <table className="table">
-            <thead>
-              <tr>
-                <th>District</th>
-                <th>Item</th>
-                <th>Qty</th>
-              </tr>
-            </thead>
-            <tbody>
-              {section.rows.map((row) => (
-                <tr key={`${row.districtId}-${row.itemName}-${row.ownerName}`}>
-                  <td>{name(row.districtId)}</td>
-                  <td>
-                    {row.itemName}
-                    <br />
-                    <span className="muted small">{row.ownerName}</span>
-                  </td>
-                  <td>
-                    {row.quantity.toLocaleString()} {row.unit}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <Card>
+            {section.rows.map((row) => (
+              <Row key={`${row.districtId}-${row.itemName}-${row.ownerName}`} style={styles.tableRow}>
+                <View style={styles.flex}>
+                  <Txt small strong>{row.itemName}</Txt>
+                  <Txt small muted>
+                    {name(row.districtId)} • {row.ownerName}
+                  </Txt>
+                </View>
+                <Txt small strong>
+                  {row.quantity.toLocaleString()} {row.unit}
+                </Txt>
+              </Row>
+            ))}
+          </Card>
         </>
       );
     case ReportCategory.RESCUE_OPERATIONS:
       return (
         <>
           <SectionTitle>Rescue operations</SectionTitle>
-          <div className="stats">
+          <Stats>
             <StatTile label="Missions" value={section.missions} />
             <StatTile label="People rescued" value={section.peopleRescued} />
             <StatTile label="Avg. response" value={section.averageResponseMinutes === undefined ? 'n/a' : `${section.averageResponseMinutes} min`} />
-          </div>
+          </Stats>
           <BarList rows={section.byTeam.map((t) => ({ label: t.teamName, value: t.peopleRescued, caption: `${t.peopleRescued} (${t.missions})` }))} />
-          <p className="muted small">{section.crossOrganisationMissions} mission(s) used a team borrowed from another district or organisation.</p>
+          <Txt small muted>{section.crossOrganisationMissions} mission(s) used a team borrowed from another district or organisation.</Txt>
         </>
       );
   }
 }
+
+const styles = StyleSheet.create({
+  flex: { flex: 1 },
+  start: { justifyContent: 'flex-start' },
+  dateRange: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  timelineItem: { borderLeftWidth: 3, borderLeftColor: colors.border, paddingLeft: 10, marginBottom: 10, gap: 2 },
+  tableRow: { paddingVertical: 6, borderBottomWidth: 1, borderBottomColor: '#f0ede8' },
+});

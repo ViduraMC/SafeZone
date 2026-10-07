@@ -12,21 +12,8 @@ interface AppContextValue {
 
 const AppContext = createContext<AppContextValue | null>(null);
 
-const PERSONA_STORAGE_KEY = 'safezone.persona';
-
-function readStoredPersona(): string | null {
-  try {
-    return window.localStorage.getItem(PERSONA_STORAGE_KEY);
-  } catch {
-    return null;
-  }
-}
-
 export function AppProvider({ app, initialUserId, children }: { app: SafeZoneApp; initialUserId: string; children: ReactNode }) {
-  const [userId, setUserId] = useState(() => {
-    const stored = readStoredPersona();
-    return stored && app.repositories.users.findById(stored) ? stored : initialUserId;
-  });
+  const [userId, setUserId] = useState(() => (app.repositories.users.findById(initialUserId) ? initialUserId : app.repositories.users.findAll()[0].id));
   const [version, setVersion] = useState(0);
 
   useEffect(() => {
@@ -39,14 +26,7 @@ export function AppProvider({ app, initialUserId, children }: { app: SafeZoneApp
     };
   }, [app]);
 
-  const switchUser = useCallback((id: string) => {
-    setUserId(id);
-    try {
-      window.localStorage.setItem(PERSONA_STORAGE_KEY, id);
-    } catch {
-      /* persona is a convenience only */
-    }
-  }, []);
+  const switchUser = useCallback((id: string) => setUserId(id), []);
 
   const value = useMemo(() => ({ app, user: app.users.get(userId), switchUser, version }), [app, userId, switchUser, version]);
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

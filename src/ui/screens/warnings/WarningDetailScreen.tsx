@@ -1,15 +1,15 @@
 import { useState } from 'react';
-import { useParams } from 'react-router-dom';
 import { allSeverityLevels, isHigherSeverity, type SeverityLevel } from '@/core/hazard/SeverityLevel';
 import { useSafeZone } from '../../AppContext';
-import { Button, Card, ChipGroup, Field, Notice, SectionTitle, SeverityBadge, StatTile } from '../../components/Primitives';
+import { Button, Card, ChipGroup, Field, Notice, Row, SectionTitle, SeverityBadge, StatTile, Stats, TextField, Title, Txt } from '../../components/Primitives';
 import { Screen } from '../../components/Shell';
 import { formatDateTime, SEVERITY_LABELS, timeUntil } from '../../lib/format';
 import { useAction } from '../../lib/useAction';
+import { useParam } from '../../lib/useNav';
 
-/** Delivery monitoring (UC01 step 15-16) plus A1 "Escalate Existing Warning" and resolve. */
+/** Delivery monitoring (UC01 steps 15-16) plus A1 "Escalate Existing Warning" and resolve. */
 export function WarningDetailScreen() {
-  const { alertId = '' } = useParams();
+  const alertId = useParam('alertId');
   const { app, user } = useSafeZone();
   const alert = app.alerts.getAlert(alertId);
   const summary = app.alerts.deliverySummary(alert.id);
@@ -32,51 +32,41 @@ export function WarningDetailScreen() {
 
   return (
     <Screen title="Warning monitoring" back="/warnings">
-      <div className="detail-head">
+      <Row>
         <SeverityBadge severity={alert.severity} />
-        <span className="muted small">{live ? `Active • expires in ${timeUntil(alert.validUntil, now)}` : alert.status}</span>
-      </div>
-      <h2 className="detail-title">{alert.title}</h2>
-      <p className="muted small">
-        {alert.id} • {alert.target.describe(app.geo)} • issued {alert.issuedAt && formatDateTime(alert.issuedAt)}
-      </p>
+        <Txt small muted>{live ? `Active • expires in ${timeUntil(alert.validUntil, now)}` : alert.status}</Txt>
+      </Row>
+      <Title>{alert.title}</Title>
+      <Txt small muted>
+        {alert.id} • {alert.target.describe(app.geo)} • issued {alert.issuedAt ? formatDateTime(alert.issuedAt) : ''}
+      </Txt>
 
-      <div className="stats">
+      <Stats>
         <StatTile label="Targeted" value={summary.recipients} />
         <StatTile label="Reached" value={summary.reached} />
         <StatTile label="Queued" value={summary.queued} />
-      </div>
+      </Stats>
       <Card>
-        <p className="small">
-          Push delivered: <strong>{summary.deliveredByChannel.PUSH}</strong> • SMS delivered: <strong>{summary.deliveredByChannel.SMS}</strong> • Failed attempts:{' '}
-          <strong>{summary.failedAttempts}</strong>
-        </p>
+        <Txt small>
+          Push delivered: {summary.deliveredByChannel.PUSH} • SMS delivered: {summary.deliveredByChannel.SMS} • Failed attempts: {summary.failedAttempts}
+        </Txt>
       </Card>
 
-      {alert.escalations.length > 0 && (
-        <>
-          <SectionTitle>Escalation history</SectionTitle>
-          {alert.escalations.map((e) => (
-            <p key={e.at.toISOString()} className="small">
-              {formatDateTime(e.at)}: {SEVERITY_LABELS[e.from]} → {SEVERITY_LABELS[e.to]} - {e.reason}
-            </p>
-          ))}
-        </>
-      )}
+      {alert.escalations.length > 0 && <SectionTitle>Escalation history</SectionTitle>}
+      {alert.escalations.map((e) => (
+        <Txt key={e.at.toISOString()} small>
+          {formatDateTime(e.at)}: {SEVERITY_LABELS[e.from]} → {SEVERITY_LABELS[e.to]}. {e.reason}
+        </Txt>
+      ))}
 
       {live && higher.length > 0 && (
         <Card tone="warning">
-          <p className="strong">Escalate warning level</p>
+          <Txt strong>Escalate warning level</Txt>
           <Field label="New level">
-            <ChipGroup<SeverityLevel>
-              label="New level"
-              options={higher.map((l) => ({ value: l, label: SEVERITY_LABELS[l] }))}
-              selected={level ? [level] : []}
-              onToggle={setLevel}
-            />
+            <ChipGroup<SeverityLevel> label="New level" options={higher.map((l) => ({ value: l, label: SEVERITY_LABELS[l] }))} selected={level ? [level] : []} onToggle={setLevel} />
           </Field>
-          <Field label="Reason for escalation" htmlFor="reason">
-            <textarea id="reason" rows={2} value={reason} onChange={(e) => setReason(e.target.value)} />
+          <Field label="Reason for escalation">
+            <TextField label="Reason for escalation" multiline value={reason} onChangeText={setReason} />
           </Field>
           {verified.length > 0 && (
             <Field label="Supporting verified reports">
@@ -89,13 +79,13 @@ export function WarningDetailScreen() {
             </Field>
           )}
           {action.error && <Notice tone="danger">{action.error}</Notice>}
-          <Button block variant="danger" disabled={action.busy} onClick={escalate}>
+          <Button block variant="danger" disabled={action.busy} onPress={() => void escalate()}>
             Escalate & re-broadcast
           </Button>
         </Card>
       )}
       {live && (
-        <Button block variant="secondary" onClick={() => action.run(() => app.alerts.resolveWarning(alert.id, user))}>
+        <Button block variant="secondary" onPress={() => void action.run(() => app.alerts.resolveWarning(alert.id, user))}>
           Mark as resolved
         </Button>
       )}

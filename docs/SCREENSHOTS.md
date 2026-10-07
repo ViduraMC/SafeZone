@@ -1,6 +1,6 @@
 # UI flow with screenshots
 
-Screens captured from the running app at 390 x 844 px (`npm run screenshots`). Step numbers refer to the use case scenarios in the report. A means an alternate flow and E an exception flow.
+Screens captured from the React Native app (its web build, rendered by react-native-web) at 390 x 844 px (`npm run screenshots`). The same screens run on Android and iOS through Expo Go. Step numbers refer to the use case scenarios in the report. A means an alternate flow and E an exception flow.
 
 ## UC01 Issue Hazard Warning
 
@@ -68,7 +68,7 @@ All required fields are highlighted when the reporter submits too early.
 
 ### GPS location locked and an invalid photo (steps 3 to 7, E4)
 
-The GPS position is mapped to its district and a valid photo is attached. A PDF is refused with a clear message, and each error clears as soon as the field is fixed.
+The GPS position is mapped to its district and a valid photo is attached. A file that cannot be read as a photo is refused with a clear message, and each error clears as soon as the field is fixed.
 
 <img src="screenshots/uc02-02-report-form-invalid-photo.png" width="300" alt="GPS location locked and an invalid photo (steps 3 to 7, E4)">
 
@@ -200,7 +200,7 @@ Select the disaster event, the report categories (A2), the districts (A1) and th
 
 ### Generated report (steps 8 to 17)
 
-Alert timeline, citizens reached per district, shelter occupancy over time, resource distribution by district and contributor, and rescue operations. Export to CSV, JSON or print to PDF.
+Alert timeline, citizens reached per district, shelter occupancy over time, resource distribution by district and contributor, and rescue operations. Export to CSV or JSON through the phone's share sheet.
 
 <img src="screenshots/uc05-02-generated-report.png" width="300" alt="Generated report (steps 8 to 17)">
 

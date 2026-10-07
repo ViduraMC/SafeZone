@@ -1,37 +1,41 @@
 import { useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
 import { MAX_CREDIBILITY, MIN_CREDIBILITY } from '@/modules/reports/domain/GroundReport';
 import { ReportStatus } from '@/modules/reports/domain/ReportStatus';
 import { useSafeZone } from '../../AppContext';
-import { Badge, Button, Card, EmptyState, Field, Notice, Segmented } from '../../components/Primitives';
+import { Badge, Button, Card, EmptyState, Field, ListCard, Notice, Row, Segmented, TextField, Txt } from '../../components/Primitives';
 import { Screen } from '../../components/Shell';
 import { timeAgo } from '../../lib/format';
 import { useAction } from '../../lib/useAction';
+import { useNav, useParam } from '../../lib/useNav';
 import { ReportBody, ReportStatusBadge } from './ReportViews';
 
 export function ReviewQueueScreen() {
   const { app } = useSafeZone();
+  const nav = useNav();
   const queue = app.reportVerification.pendingQueue();
   return (
     <Screen title="Review Queue" subtitle={`${queue.length} report${queue.length === 1 ? '' : 's'} pending verification`}>
       {queue.length === 0 && <EmptyState title="All caught up">New ground reports will appear here.</EmptyState>}
       {queue.map((report) => (
-        <Link key={report.id} to={`/review/${report.id}`} className={`list-card list-card--${report.severityAssessment === 'HIGH' ? 'emergency' : 'warning'}`}>
-          <div className="list-card__top">
-            <Badge tone={report.severityAssessment === 'HIGH' ? 'critical' : report.severityAssessment === 'MEDIUM' ? 'warning' : 'advisory'}>
-              {report.severityAssessment}
-            </Badge>
-            <span className="muted small">{timeAgo(report.submittedAt, app.clock.now())}</span>
-          </div>
-          <p className="list-card__title">
+        <ListCard
+          key={report.id}
+          label={`Review ${report.id}`}
+          accent={report.severityAssessment === 'HIGH' ? 'critical' : 'warning'}
+          onPress={() => nav.go(`/review/${report.id}`)}
+        >
+          <Row>
+            <Badge tone={report.severityAssessment === 'HIGH' ? 'critical' : report.severityAssessment === 'MEDIUM' ? 'warning' : 'advisory'}>{report.severityAssessment}</Badge>
+            <Txt small muted>{timeAgo(report.submittedAt, app.clock.now())}</Txt>
+          </Row>
+          <Txt strong>
             {app.hazardTypes.get(report.hazardTypeCode).name} - {report.location.label}
-          </p>
-          <p className="muted small">
+          </Txt>
+          <Txt small muted>
             {app.geo.districtName(report.location.districtId)} • {report.reporterKind === 'VOLUNTEER' ? 'Volunteer' : 'Citizen'} • {report.evidence.length} photo
             {report.evidence.length === 1 ? '' : 's'}
-            {report.supplements.length > 0 && ' • updated by reporter'}
-          </p>
-        </Link>
+            {report.supplements.length > 0 ? ' • updated by reporter' : ''}
+          </Txt>
+        </ListCard>
       ))}
     </Screen>
   );
@@ -39,20 +43,21 @@ export function ReviewQueueScreen() {
 
 export function ReviewHistoryScreen() {
   const { app } = useSafeZone();
+  const nav = useNav();
   const reviewed = app.reportVerification.reviewedReports();
   return (
     <Screen title="Reviewed Reports">
       {reviewed.length === 0 && <EmptyState title="No decisions yet" />}
       {reviewed.map((report) => (
-        <Link key={report.id} to={`/review/${report.id}`} className="list-card">
-          <div className="list-card__top">
+        <ListCard key={report.id} onPress={() => nav.go(`/review/${report.id}`)}>
+          <Row>
             <ReportStatusBadge status={report.status} />
-            <span className="muted small">{report.latestReview ? timeAgo(report.latestReview.at, app.clock.now()) : ''}</span>
-          </div>
-          <p className="list-card__title">
+            <Txt small muted>{report.latestReview ? timeAgo(report.latestReview.at, app.clock.now()) : ''}</Txt>
+          </Row>
+          <Txt strong>
             {app.hazardTypes.get(report.hazardTypeCode).name} - {report.location.label}
-          </p>
-        </Link>
+          </Txt>
+        </ListCard>
       ))}
     </Screen>
   );
@@ -60,11 +65,13 @@ export function ReviewHistoryScreen() {
 
 type Decision = 'verify' | 'info' | 'reject';
 
+const SCORES = Array.from({ length: MAX_CREDIBILITY - MIN_CREDIBILITY + 1 }, (_, i) => String(MIN_CREDIBILITY + i));
+
 /** UC02 steps 12-17 with A1 (request info) and A2 (reject). */
 export function ReviewDetailScreen() {
-  const { reportId = '' } = useParams();
+  const reportId = useParam('reportId');
   const { app, user } = useSafeZone();
-  const navigate = useNavigate();
+  const nav = useNav();
   const report = app.reportSubmission.getReport(reportId);
   const [decision, setDecision] = useState<Decision>('verify');
   const [score, setScore] = useState(4);
@@ -78,13 +85,13 @@ export function ReviewDetailScreen() {
       if (decision === 'info') return app.reportVerification.requestMoreInformation(report.id, user, text);
       return app.reportVerification.reject(report.id, user, text);
     });
-    if (done) navigate('/review');
+    if (done) nav.resetTo('/review');
   };
 
   return (
     <Screen title="Review Report" back="/review">
       <ReportBody report={report} />
-      {!reviewable && <Notice tone="info">This report is {report.status.replace(/_/g, ' ').toLowerCase()} and is not awaiting review.</Notice>}
+      {!reviewable && <Notice tone="info">{`This report is ${report.status.replace(/_/g, ' ').toLowerCase()} and is not awaiting review.`}</Notice>}
       {reviewable && (
         <Card>
           <Segmented<Decision>
@@ -101,19 +108,15 @@ export function ReviewDetailScreen() {
             ]}
           />
           {decision === 'verify' && (
-            <Field label={`Credibility score (${MIN_CREDIBILITY}-${MAX_CREDIBILITY})`} htmlFor="score">
-              <input id="score" type="range" min={MIN_CREDIBILITY} max={MAX_CREDIBILITY} value={score} onChange={(e) => setScore(Number(e.target.value))} />
-              <span className="strong">{score} / {MAX_CREDIBILITY}</span>
+            <Field label={`Credibility score (${MIN_CREDIBILITY}-${MAX_CREDIBILITY})`}>
+              <Segmented label="Credibility score" value={String(score)} onChange={(value) => setScore(Number(value))} options={SCORES.map((s) => ({ value: s, label: s }))} />
             </Field>
           )}
-          <Field
-            label={decision === 'verify' ? 'Comment (optional)' : decision === 'info' ? 'What information is needed?' : 'Rejection reason'}
-            htmlFor="decision-text"
-          >
-            <textarea id="decision-text" rows={3} value={text} onChange={(e) => setText(e.target.value)} />
+          <Field label={decision === 'verify' ? 'Comment (optional)' : decision === 'info' ? 'What information is needed?' : 'Rejection reason'}>
+            <TextField label="Decision comment" multiline value={text} onChangeText={setText} />
           </Field>
           {action.error && <Notice tone="danger">{action.error}</Notice>}
-          <Button block variant={decision === 'reject' ? 'danger' : 'primary'} disabled={action.busy} onClick={submit}>
+          <Button block variant={decision === 'reject' ? 'danger' : 'primary'} disabled={action.busy} onPress={() => void submit()}>
             {decision === 'verify' ? 'Verify Report' : decision === 'info' ? 'Request Additional Info' : 'Reject Report'}
           </Button>
         </Card>

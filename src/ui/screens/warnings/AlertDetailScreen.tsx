@@ -1,69 +1,66 @@
-import { useNavigate, useParams } from 'react-router-dom';
+import { Share, StyleSheet, View } from 'react-native';
 import { useSafeZone } from '../../AppContext';
-import { Badge, Button, Card, SectionTitle, SeverityBadge } from '../../components/Primitives';
+import { Badge, Button, ButtonRow, Card, Chip, Row, SectionTitle, SeverityBadge, Title, Txt } from '../../components/Primitives';
 import { Screen } from '../../components/Shell';
 import { formatDateTime, SEVERITY_LABELS, timeUntil } from '../../lib/format';
+import { useNav, useParam } from '../../lib/useNav';
 
+/** Citizen view of one warning, with the share sheet and a link to the nearest shelters. */
 export function AlertDetailScreen() {
-  const { alertId = '' } = useParams();
+  const alertId = useParam('alertId');
   const { app } = useSafeZone();
-  const navigate = useNavigate();
+  const nav = useNav();
   const alert = app.alerts.getAlert(alertId);
   const now = app.clock.now();
   const active = alert.isActiveAt(now);
   const districts = alert.target.resolveDistrictIds(app.geo);
 
-  const share = () => {
-    const text = `${alert.title} - ${alert.target.describe(app.geo)}. ${alert.description}`;
-    if (navigator.share) void navigator.share({ title: 'SafeZone alert', text });
-    else void navigator.clipboard?.writeText(text);
-  };
+  const share = () => void Share.share({ title: 'SafeZone alert', message: `${alert.title} - ${alert.target.describe(app.geo)}. ${alert.description}` });
 
   return (
     <Screen title="Warning details" back>
-      <div className="detail-head">
+      <Row>
         <SeverityBadge severity={alert.severity} />
-        <span className="muted small">{active ? `Active • Expires in ${timeUntil(alert.validUntil, now)}` : `Ended • ${alert.status}`}</span>
-      </div>
-      <h2 className="detail-title">{alert.title}</h2>
-      <p className="muted small">
-        Issued by: <strong>Disaster Management Centre</strong>
-        <br />
-        Time: <strong>{alert.issuedAt ? formatDateTime(alert.issuedAt) : '-'}</strong>
-        {' • '}
-        {app.hazardTypes.get(alert.hazardTypeCode).name}
-      </p>
+        <Txt small muted>{active ? `Active • Expires in ${timeUntil(alert.validUntil, now)}` : `Ended • ${alert.status}`}</Txt>
+      </Row>
+      <View style={styles.heading}>
+        <Title>{alert.title}</Title>
+        <Txt small muted>
+          Issued by Disaster Management Centre • {alert.issuedAt ? formatDateTime(alert.issuedAt) : '-'} • {app.hazardTypes.get(alert.hazardTypeCode).name}
+        </Txt>
+      </View>
 
       <SectionTitle>Affected regions</SectionTitle>
-      <div className="chips">
+      <View style={styles.regions}>
         {alert.target.scope === 'RIVER_BASIN' && <Badge tone="info">{alert.target.describe(app.geo)}</Badge>}
         {districts.map((id) => (
-          <span key={id} className="chip chip--static">{app.geo.districtName(id)} District</span>
+          <Chip key={id}>{app.geo.districtName(id)} District</Chip>
         ))}
-      </div>
+      </View>
 
       <Card>
-        <p>{alert.description}</p>
+        <Txt>{alert.description}</Txt>
       </Card>
 
-      {alert.escalations.length > 0 && (
-        <>
-          <SectionTitle>Updates</SectionTitle>
-          {alert.escalations.map((e) => (
-            <Card key={e.at.toISOString()} tone="warning">
-              <p className="small">
-                <strong>{formatDateTime(e.at)}</strong> - raised from {SEVERITY_LABELS[e.from]} to {SEVERITY_LABELS[e.to]}
-              </p>
-              <p className="small">{e.reason}</p>
-            </Card>
-          ))}
-        </>
-      )}
+      {alert.escalations.length > 0 && <SectionTitle>Updates</SectionTitle>}
+      {alert.escalations.map((e) => (
+        <Card key={e.at.toISOString()} tone="warning">
+          <Txt small strong>
+            {formatDateTime(e.at)}: raised from {SEVERITY_LABELS[e.from]} to {SEVERITY_LABELS[e.to]}
+          </Txt>
+          <Txt small>{e.reason}</Txt>
+        </Card>
+      ))}
 
-      <div className="button-row">
-        <Button onClick={() => navigate('/shelters')}>Find Nearest Shelter</Button>
-        <Button variant="secondary" onClick={share}>Share Alert</Button>
-      </div>
+      <ButtonRow>
+        <Button icon="pin" onPress={() => nav.go('/shelters')}>Find Nearest Shelter</Button>
+        <Button variant="secondary" onPress={share}>Share Alert</Button>
+      </ButtonRow>
     </Screen>
   );
 }
+
+const styles = StyleSheet.create({
+  heading: { marginVertical: 10 },
+  regions: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 12 },
+});

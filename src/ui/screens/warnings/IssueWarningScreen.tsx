@@ -1,18 +1,18 @@
 import { useState } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
 import { allSeverityLevels, type SeverityLevel } from '@/core/hazard/SeverityLevel';
 import type { AlertDraft } from '@/modules/alerts/application/AlertDraft';
 import type { WarningPreview, WarningResult } from '@/modules/alerts/application/AlertService';
 import type { TargetScope } from '@/modules/alerts/domain/TargetArea';
 import { useSafeZone } from '../../AppContext';
-import { Button, Card, ChipGroup, Field, Notice, Segmented, StatTile } from '../../components/Primitives';
+import { Button, Card, ChipGroup, Field, Notice, NumberField, Segmented, SelectField, StatTile, Stats, TextField, Txt } from '../../components/Primitives';
 import { Screen } from '../../components/Shell';
 import { formatDateTime, SEVERITY_LABELS } from '../../lib/format';
 import { useAction } from '../../lib/useAction';
+import { useNav, useParam } from '../../lib/useNav';
 
 type Step = 'form' | 'review' | 'done';
 
-function initialDraft(reportId: string | null, lookup: (id: string) => { hazardTypeCode: string; districtId: string } | undefined): AlertDraft {
+function initialDraft(reportId: string, lookup: (id: string) => { hazardTypeCode: string; districtId: string } | undefined): AlertDraft {
   const report = reportId ? lookup(reportId) : undefined;
   return {
     hazardTypeCode: report?.hazardTypeCode ?? '',
@@ -22,17 +22,18 @@ function initialDraft(reportId: string | null, lookup: (id: string) => { hazardT
     targetScope: 'DISTRICT',
     targetIds: report ? [report.districtId] : [],
     validityHours: 24,
-    supportingReportIds: reportId && report ? [reportId] : [],
+    supportingReportIds: report ? [reportId] : [],
   };
 }
 
 /** UC01 main flow steps 3-16, A2/A3 targeting, A4 channels, E1-E4. */
 export function IssueWarningScreen() {
   const { app, user } = useSafeZone();
-  const [params] = useSearchParams();
+  const nav = useNav();
+  const reportId = useParam('report');
   const [step, setStep] = useState<Step>('form');
   const [draft, setDraft] = useState<AlertDraft>(() =>
-    initialDraft(params.get('report'), (id) => {
+    initialDraft(reportId, (id) => {
       const r = app.alerts.dashboard().verifiedReports.find((v) => v.reportId === id);
       return r && { hazardTypeCode: r.hazardTypeCode, districtId: r.districtId };
     }),
@@ -63,8 +64,8 @@ export function IssueWarningScreen() {
   };
 
   const selectHazard = (code: string) => {
-    const type = code ? app.hazardTypes.get(code) : undefined;
-    update({ hazardTypeCode: code, severity: draft.severity || (type?.defaultSeverity ?? '') });
+    const type = app.hazardTypes.get(code);
+    update({ hazardTypeCode: code, severity: draft.severity || type.defaultSeverity });
   };
 
   if (step === 'done' && result) {
@@ -72,62 +73,60 @@ export function IssueWarningScreen() {
     return (
       <Screen title="Warning issued">
         <Card tone="success">
-          <p className="lead">Official hazard warning issued & stored</p>
-          <p className="small">
+          <Txt lead>Official hazard warning issued and stored</Txt>
+          <Txt small>
             {result.alert.id} • {result.alert.title}
-          </p>
+          </Txt>
         </Card>
         {result.noRecipientsFound && (
-          <Notice tone="warning">No registered citizens were found in the selected area. The warning is stored; you can modify the affected area by issuing an updated warning.</Notice>
+          <Notice tone="warning">No registered citizens were found in the selected area. The warning is stored; you can change the affected area by issuing an updated warning.</Notice>
         )}
-        <div className="stats">
+        <Stats>
           <StatTile label="Citizens targeted" value={summary.recipients} />
           <StatTile label="Reached" value={summary.reached} />
           <StatTile label="Queued for retry" value={summary.queued} />
-        </div>
+        </Stats>
         <Card>
-          <p className="small strong">Delivery by channel</p>
-          <p className="small">
+          <Txt small strong>Delivery by channel</Txt>
+          <Txt small>
             Push: {summary.byChannel.PUSH.delivered} delivered, {summary.byChannel.PUSH.failed} failed
-            <br />
+          </Txt>
+          <Txt small>
             SMS: {summary.byChannel.SMS.delivered} delivered, {summary.byChannel.SMS.failed} failed
-          </p>
+          </Txt>
         </Card>
-        <Link className="btn btn--primary btn--block" to={`/warnings/${result.alert.id}`}>
-          Monitor delivery
-        </Link>
-        <Link className="btn btn--secondary btn--block" to="/warnings">
-          Back to dashboard
-        </Link>
+        <Button block onPress={() => nav.go(`/warnings/${result.alert.id}`)}>Monitor delivery</Button>
+        <Button block variant="secondary" onPress={() => nav.resetTo('/warnings')}>Back to dashboard</Button>
       </Screen>
     );
   }
 
   if (step === 'review' && preview) {
     return (
-      <Screen title="Confirm warning" back>
+      <Screen title="Confirm warning">
         <Card tone="warning">
-          <p className="caps small muted">{SEVERITY_LABELS[draft.severity as SeverityLevel]} • {app.hazardTypes.get(draft.hazardTypeCode).name}</p>
-          <p className="lead">{draft.title}</p>
-          <p className="small">{draft.description}</p>
+          <Txt caps small muted>
+            {SEVERITY_LABELS[draft.severity as SeverityLevel]} • {app.hazardTypes.get(draft.hazardTypeCode).name}
+          </Txt>
+          <Txt lead>{draft.title}</Txt>
+          <Txt small>{draft.description}</Txt>
         </Card>
         <Card>
-          <ul className="checklist">
-            <li>Target: {preview.areaDescription} ({preview.districtIds.map((id) => app.geo.districtName(id)).join(', ')})</li>
-            <li>Registered citizens identified: {preview.recipientCount}</li>
-            <li>Channels: {preview.channels.length > 0 ? preview.channels.join(' + ') : 'none'}{preview.audibleOverride ? ' + audible emergency override' : ''}</li>
-            <li>Valid until {formatDateTime(preview.validUntil)}</li>
-            {(draft.supportingReportIds?.length ?? 0) > 0 && <li>Supported by verified report {draft.supportingReportIds?.join(', ')}</li>}
-          </ul>
+          <Txt small>• Target: {preview.areaDescription} ({preview.districtIds.map((id) => app.geo.districtName(id)).join(', ')})</Txt>
+          <Txt small>• Registered citizens identified: {preview.recipientCount}</Txt>
+          <Txt small>
+            • Channels: {preview.channels.length > 0 ? preview.channels.join(' + ') : 'none'}
+            {preview.audibleOverride ? ' + audible emergency override' : ''}
+          </Txt>
+          <Txt small>• Valid until {formatDateTime(preview.validUntil)}</Txt>
+          {(draft.supportingReportIds?.length ?? 0) > 0 && <Txt small>• Supported by verified report {draft.supportingReportIds?.join(', ')}</Txt>}
         </Card>
         {preview.recipientCount === 0 && <Notice tone="warning">No registered citizens in this area (E3). You can go back and change the affected area.</Notice>}
         {action.error && <Notice tone="danger">{action.error}</Notice>}
-        <Button block variant="danger" disabled={action.busy} onClick={issue}>
+        <Button block variant="danger" disabled={action.busy} onPress={() => void issue()}>
           {action.busy ? 'Broadcasting...' : 'Issue Warning'}
         </Button>
-        <Button block variant="secondary" onClick={() => setStep('form')}>
-          Edit
-        </Button>
+        <Button block variant="secondary" onPress={() => setStep('form')}>Edit</Button>
       </Screen>
     );
   }
@@ -135,16 +134,16 @@ export function IssueWarningScreen() {
   const districtOptions = app.geo.listDistricts().map((d) => ({ value: d.id, label: d.name }));
   return (
     <Screen title="Hazard Warning Form">
-      {(draft.supportingReportIds?.length ?? 0) > 0 && <Notice tone="info">Based on verified report {draft.supportingReportIds?.join(', ')}.</Notice>}
-      <Field label="Hazard type" error={errors.hazardTypeCode} htmlFor="hazard">
-        <select id="hazard" value={draft.hazardTypeCode} onChange={(e) => selectHazard(e.target.value)}>
-          <option value="">Select hazard type</option>
-          {app.hazardTypes.list().map((t) => (
-            <option key={t.code} value={t.code}>
-              {t.name} ({t.onset === 'FAST' ? 'fast-onset' : 'slow-onset'})
-            </option>
-          ))}
-        </select>
+      {(draft.supportingReportIds?.length ?? 0) > 0 && <Notice tone="info">{`Based on verified report ${draft.supportingReportIds?.join(', ')}.`}</Notice>}
+      <Field label="Hazard type" error={errors.hazardTypeCode}>
+        <SelectField
+          label="Hazard type"
+          placeholder="Select hazard type"
+          value={draft.hazardTypeCode}
+          invalid={!!errors.hazardTypeCode}
+          onChange={selectHazard}
+          options={app.hazardTypes.list().map((t) => ({ value: t.code, label: `${t.name} (${t.onset === 'FAST' ? 'fast-onset' : 'slow-onset'})` }))}
+        />
       </Field>
       <Field label="Warning level" error={errors.severity}>
         <Segmented<SeverityLevel | ''>
@@ -174,29 +173,31 @@ export function IssueWarningScreen() {
             onToggle={(id) => update({ targetIds: draft.targetIds.includes(id) ? draft.targetIds.filter((x) => x !== id) : [...draft.targetIds, id] })}
           />
         ) : (
-          <select value={draft.targetIds[0] ?? ''} onChange={(e) => update({ targetIds: e.target.value ? [e.target.value] : [] })} aria-label="River basin">
-            <option value="">Select river basin</option>
-            {app.geo.listRiverBasins().map((b) => (
-              <option key={b.id} value={b.id}>
-                {b.name} ({b.districtIds.map((id) => app.geo.districtName(id)).join(', ')})
-              </option>
-            ))}
-          </select>
+          <SelectField
+            label="River basin"
+            placeholder="Select river basin"
+            value={draft.targetIds[0] ?? ''}
+            invalid={!!errors.targetIds}
+            onChange={(id) => update({ targetIds: [id] })}
+            options={app.geo.listRiverBasins().map((b) => ({ value: b.id, label: `${b.name} (${b.districtIds.map((id) => app.geo.districtName(id)).join(', ')})` }))}
+          />
         )}
       </Field>
-      <Field label="Headline" error={errors.title} htmlFor="title">
-        <input id="title" value={draft.title} onChange={(e) => update({ title: e.target.value })} placeholder="e.g. Kelani River Basin Spillover" />
+      <Field label="Headline" error={errors.title}>
+        <TextField label="Headline" value={draft.title} invalid={!!errors.title} onChangeText={(title) => update({ title })} placeholder="e.g. Kelani River Basin Spillover" />
       </Field>
-      <Field label="Description & required action" error={errors.description} htmlFor="desc">
-        <textarea id="desc" rows={4} value={draft.description} onChange={(e) => update({ description: e.target.value })} />
+      <Field label="Description and required action" error={errors.description}>
+        <TextField label="Description and required action" multiline value={draft.description} invalid={!!errors.description} onChangeText={(description) => update({ description })} />
       </Field>
-      <Field label="Validity (hours)" error={errors.validityHours} htmlFor="validity" hint={draft.hazardTypeCode ? `Max ${app.hazardTypes.get(draft.hazardTypeCode).maxValidityHours} h for this hazard` : undefined}>
-        <input id="validity" type="number" min={1} value={draft.validityHours} onChange={(e) => update({ validityHours: Number(e.target.value) })} />
+      <Field
+        label="Validity (hours)"
+        error={errors.validityHours}
+        hint={draft.hazardTypeCode ? `Max ${app.hazardTypes.get(draft.hazardTypeCode).maxValidityHours} h for this hazard` : undefined}
+      >
+        <NumberField label="Validity (hours)" value={draft.validityHours} invalid={!!errors.validityHours} onChange={(validityHours) => update({ validityHours })} />
       </Field>
       {action.error && <Notice tone="danger">{action.error}</Notice>}
-      <Button block onClick={validate}>
-        Validate & Review
-      </Button>
+      <Button block onPress={() => void validate()}>Validate & Review</Button>
     </Screen>
   );
 }
