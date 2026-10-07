@@ -10,6 +10,7 @@ import { commonScreens } from './screens/common';
 import { warningScreens } from './screens/warnings';
 import { reportScreens } from './screens/reports';
 import { shelterScreens } from './screens/shelters';
+import { dispatchScreens } from './screens/dispatch';
 
 /** Screens of the five use cases, each module registers its own. */
 const SCREENS: Partial<Record<RouteName, ComponentType>> = {
@@ -17,6 +18,7 @@ const SCREENS: Partial<Record<RouteName, ComponentType>> = {
   ...warningScreens, // UC01
   ...reportScreens, // UC02
   ...shelterScreens, // UC03
+  ...dispatchScreens, // UC04
 };
 
 const Stack = createNativeStackNavigator();
