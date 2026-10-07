@@ -68,4 +68,12 @@ describe('React Native screens (presentation layer smoke tests)', () => {
     expect(screen.getByText(/is approaching capacity/)).toBeTruthy();
     expect(screen.getByText('Alternative shelters')).toBeTruthy();
   });
+
+  it('shows a shortage message when relief stock is insufficient (UC04 E1)', async () => {
+    await renderAs(PERSONA_IDS.districtOfficer, '/coordination/relief');
+    await press(/^Essential medicine packs/);
+    await fireEvent.changeText(screen.getByLabelText('Quantity'), '500');
+    await press('Confirm allocation');
+    expect(screen.getByText(/Only \d+ available/)).toBeTruthy();
+  });
 });
