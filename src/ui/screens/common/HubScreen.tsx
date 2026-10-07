@@ -1,105 +1,92 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Pressable, StyleSheet, View } from 'react-native';
 import { PERSONAS, ROLE_LABELS } from '@/app/demo/personas';
 import { useRefresh, useSafeZone } from '../../AppContext';
-import { Badge, Button, Card, SectionTitle } from '../../components/Primitives';
+import { Badge, Button, Card, SectionTitle, Toggle, Txt } from '../../components/Primitives';
 import { Screen } from '../../components/Shell';
 import { timeAgo } from '../../lib/format';
-import { homeRouteFor } from '../../navigation';
-
-function Toggle({ label, description, on, onChange }: { label: string; description: string; on: boolean; onChange(on: boolean): void }) {
-  return (
-    <label className="toggle">
-      <span>
-        <span className="strong">{label}</span>
-        <span className="muted small block">{description}</span>
-      </span>
-      <input type="checkbox" role="switch" checked={on} onChange={(e) => onChange(e.target.checked)} />
-    </label>
-  );
-}
+import { useNav } from '../../lib/useNav';
+import { colors } from '../../theme';
 
 /**
- * Persona switcher, notifications and simulation controls. Login is out of
- * scope (assignment brief), and IoT/network/SMS/GPS behaviour may be simulated.
+ * Notifications, persona switcher and simulation controls. Login is out of
+ * scope (assignment brief), and network, SMS and GPS behaviour may be simulated.
  */
 export function HubScreen() {
   const { app, user, switchUser } = useSafeZone();
   const refresh = useRefresh();
-  const navigate = useNavigate();
+  const nav = useNav();
   const [syncMessage, setSyncMessage] = useState<string>();
   const inbox = app.inbox.forUser(user.id).slice(0, 8);
   const pending = app.sync.pending();
-
-  const choosePersona = (id: string) => {
-    switchUser(id);
-    navigate(homeRouteFor(app.users.get(id)));
-  };
 
   const syncNow = async () => {
     const summary = await app.sync.flush();
     setSyncMessage(
       app.connectivity.isOnline()
         ? `${summary.synced} synchronised, ${summary.failed} failed, ${summary.remaining} remaining.`
-        : 'Still offline - updates remain stored on this device.',
+        : 'Still offline. Updates remain stored on this device.',
     );
   };
 
   return (
     <Screen title="Hub" subtitle={`${user.name} • ${user.roles.map((r) => ROLE_LABELS[r]).join(', ')}`}>
       <SectionTitle>Notifications</SectionTitle>
-      {inbox.length === 0 && <p className="muted small">No notifications.</p>}
+      {inbox.length === 0 && <Txt small muted>No notifications.</Txt>}
       {inbox.map((message) => (
-        <button
+        <Pressable
           key={message.id}
-          type="button"
-          className={`inbox-item ${message.read ? '' : 'is-unread'}`}
-          onClick={() => {
+          accessibilityRole="button"
+          onPress={() => {
             app.inbox.markRead(message.id);
             refresh();
-            if (message.link) navigate(message.link);
+            if (message.link) nav.go(message.link);
           }}
+          style={[styles.inboxItem, !message.read && styles.unread]}
         >
-          <span className="strong">{message.title}</span>
-          <span className="small">{message.body}</span>
-          <span className="muted small">
+          <Txt strong>{message.title}</Txt>
+          <Txt small>{message.body}</Txt>
+          <Txt small muted>
             {timeAgo(message.createdAt, app.clock.now())}
-            {message.audibleOverride && ' • audible emergency alert'}
-          </span>
-        </button>
+            {message.audibleOverride ? ' • audible emergency alert' : ''}
+          </Txt>
+        </Pressable>
       ))}
 
       <SectionTitle>Demo persona</SectionTitle>
       <Card>
-        <p className="muted small">Login is out of scope; switch between the actors of the four use cases.</p>
-        <div className="persona-list">
-          {PERSONAS.map((persona) => (
-            <button key={persona.id} type="button" className={`persona ${persona.id === user.id ? 'is-active' : ''}`} onClick={() => choosePersona(persona.id)}>
-              <span className="strong">{persona.name}</span>
-              <span className="muted small">{persona.roles.map((r) => ROLE_LABELS[r]).join(' + ')}</span>
-            </button>
-          ))}
-        </div>
+        <Txt small muted>Login is out of scope. Switch between the actors of the five use cases.</Txt>
+        {PERSONAS.map((persona) => (
+          <Pressable
+            key={persona.id}
+            accessibilityRole="button"
+            accessibilityLabel={persona.name}
+            onPress={() => switchUser(persona.id)}
+            style={[styles.persona, persona.id === user.id && styles.personaActive]}
+          >
+            <Txt strong>{persona.name}</Txt>
+            <Txt small muted>{persona.roles.map((r) => ROLE_LABELS[r]).join(' + ')}</Txt>
+          </Pressable>
+        ))}
       </Card>
 
       <SectionTitle>Offline sync</SectionTitle>
       <Card>
         {pending.length === 0 ? (
-          <p className="muted small">Everything is synchronised.</p>
+          <Txt small muted>Everything is synchronised.</Txt>
         ) : (
-          <ul className="plain-list">
-            {pending.map((item) => (
-              <li key={item.id} className="small">
-                <Badge tone="watch">PENDING</Badge> {item.description}
-                {item.lastError && <span className="muted"> - last error: {item.lastError}</span>}
-              </li>
-            ))}
-          </ul>
+          pending.map((item) => (
+            <View key={item.id} style={styles.pending}>
+              <Badge tone="watch">PENDING</Badge>
+              <Txt small>
+                {item.description}
+                {item.lastError ? ` (last error: ${item.lastError})` : ''}
+              </Txt>
+            </View>
+          ))
         )}
-        <Button variant="secondary" onClick={syncNow}>
-          Sync now
-        </Button>
-        {syncMessage && <p className="small">{syncMessage}</p>}
+        <Button variant="secondary" onPress={() => void syncNow()}>Sync now</Button>
+        {syncMessage ? <Txt small>{syncMessage}</Txt> : null}
       </Card>
 
       <SectionTitle>Simulation controls</SectionTitle>
@@ -123,10 +110,16 @@ export function HubScreen() {
             refresh();
           }}
         />
-        <Button variant="ghost" onClick={() => app.remoteServer.failNext(1)}>
-          Make the next sync fail (server error)
-        </Button>
+        <Button variant="ghost" onPress={() => app.remoteServer.failNext(1)}>Make the next sync fail (server error)</Button>
       </Card>
     </Screen>
   );
 }
+
+const styles = StyleSheet.create({
+  inboxItem: { backgroundColor: colors.surface, borderRadius: 12, borderWidth: 1, borderColor: colors.border, padding: 12, marginBottom: 8, gap: 2 },
+  unread: { borderLeftWidth: 4, borderLeftColor: colors.info },
+  persona: { borderWidth: 1, borderColor: colors.border, borderRadius: 10, padding: 10, marginTop: 6 },
+  personaActive: { borderColor: colors.navy, backgroundColor: colors.infoBg },
+  pending: { gap: 4, marginBottom: 8 },
+});

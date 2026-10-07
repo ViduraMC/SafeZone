@@ -1,23 +1,14 @@
 {
+  "extends": "expo/tsconfig.base",
   "compilerOptions": {
-    "target": "ES2022",
-    "lib": ["ES2022", "DOM", "DOM.Iterable"],
-    "module": "ESNext",
-    "moduleResolution": "bundler",
-    "jsx": "react-jsx",
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
     "noImplicitOverride": true,
     "skipLibCheck": true,
-    "isolatedModules": true,
-    "resolveJsonModule": true,
-    "allowImportingTsExtensions": false,
-    "noEmit": true,
-    "types": ["vitest/globals", "@testing-library/jest-dom", "node"],
-    "baseUrl": ".",
-    "paths": { "@/*": ["src/*"] }
+    "types": ["vitest/globals", "node"],
+    "paths": { "@/*": ["./src/*"] }
   },
-  "include": ["src", "tests", "vite.config.ts", "scripts"]
+  "include": ["index.ts", "src", "tests", "vitest.config.ts", "scripts"]
 }
