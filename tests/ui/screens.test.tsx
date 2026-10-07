@@ -28,6 +28,24 @@ async function renderAs(persona: string, path: string): Promise<SafeZoneApp> {
   return app;
 }
 
+/** Roles React Native accepts on Android (ReactAccessibilityDelegate); any other value crashes the app. */
+const ANDROID_ROLES = new Set([
+  'none', 'button', 'dropdownlist', 'togglebutton', 'link', 'search', 'image', 'imagebutton', 'keyboardkey', 'text', 'adjustable',
+  'summary', 'header', 'alert', 'checkbox', 'combobox', 'menu', 'menubar', 'menuitem', 'progressbar', 'radio', 'radiogroup',
+  'scrollbar', 'spinbutton', 'switch', 'tab', 'tablist', 'timer', 'list', 'grid', 'pager', 'scrollview', 'horizontalscrollview',
+  'viewgroup', 'webview', 'drawerlayout', 'slidingdrawer', 'iconmenu', 'toolbar',
+]);
+
+interface Node {
+  readonly props: Record<string, unknown>;
+  readonly children: readonly (Node | string)[];
+}
+
+function rolesIn(node: Node): string[] {
+  const own = typeof node.props.accessibilityRole === 'string' ? [node.props.accessibilityRole] : [];
+  return [...own, ...node.children.flatMap((child) => (typeof child === 'string' ? [] : rolesIn(child)))];
+}
+
 const press = (name: string | RegExp) => fireEvent.press(screen.getAllByRole('button', { name })[0]);
 
 describe('React Native screens (presentation layer smoke tests)', () => {
@@ -82,5 +100,23 @@ describe('React Native screens (presentation layer smoke tests)', () => {
     await fireEvent.press(screen.getByRole('checkbox', { name: 'Shelter Occupancy' }));
     await press('Generate report');
     expect(screen.getByText(/Donor organisations can only view/)).toBeTruthy();
+  });
+
+  it('only uses accessibility roles that Android supports', async () => {
+    const screens: [string, string][] = [
+      [PERSONA_IDS.citizen, '/alerts'],
+      [PERSONA_IDS.volunteer, '/report'],
+      [PERSONA_IDS.districtOfficer, '/coordination'],
+      [PERSONA_IDS.districtOfficer, '/coordination/relief'],
+      [PERSONA_IDS.dmcOfficer, '/warnings/new'],
+      [PERSONA_IDS.dmcOfficial, '/reports'],
+    ];
+    for (const [persona, path] of screens) {
+      await renderAs(persona, path);
+      const roles = rolesIn(screen.container as unknown as Node);
+      expect(roles.length).toBeGreaterThan(0);
+      expect(roles.filter((role) => !ANDROID_ROLES.has(role))).toEqual([]);
+      current?.dispose();
+    }
   });
 });

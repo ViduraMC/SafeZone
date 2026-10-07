@@ -70,7 +70,7 @@ function BottomNav() {
   const insets = useSafeAreaInsets();
   const currentPath = ROUTE_PATHS[route.name as RouteName];
   return (
-    <View accessibilityRole="tabbar" style={[styles.tabbar, { paddingBottom: Math.max(insets.bottom, 6) }]}>
+    <View accessibilityRole="tablist" style={[styles.tabbar, { paddingBottom: Math.max(insets.bottom, 6) }]}>
       {tabsFor(user).map((tab) => {
         const active = tab.to === currentPath;
         const color = active ? colors.navy : colors.muted;

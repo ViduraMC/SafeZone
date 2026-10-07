@@ -26,7 +26,7 @@ offline sync, notifications) supports all five use cases.
 ```bash
 npm install
 npm start            # starts Expo; scan the QR code with Expo Go, or press "a" for a USB-connected Android phone
-npm test             # 206 logic unit tests (Vitest) + 6 React Native screen tests (Jest)
+npm test             # 206 logic unit tests (Vitest) + 7 React Native screen tests (Jest)
 npm run coverage     # coverage of the domain, application and infrastructure layers
 npm run typecheck    # TypeScript strict type check
 ```
