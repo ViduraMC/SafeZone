@@ -1,74 +1,37 @@
-import { HashRouter, Navigate, Route, Routes } from 'react-router-dom';
-import { isAlertRecipient } from '@/core/users/UserAccount';
+import type { ComponentType } from 'react';
+import { getStateFromPath, NavigationContainer, type InitialState } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { StatusBar } from 'expo-status-bar';
 import { useSafeZone } from './AppContext';
 import { homeRouteFor } from './navigation';
-import { AlertDetailScreen } from './screens/warnings/AlertDetailScreen';
-import { AlertsScreen } from './screens/warnings/AlertsScreen';
-import { HomeScreen } from './screens/common/HomeScreen';
-import { ShelterDetailScreen, SheltersScreen } from './screens/shelters/SheltersScreen';
-import { CoordinationOverviewScreen } from './screens/shelters/CoordinationOverviewScreen';
+import { linking, routeNameForPath, type RouteName } from './paths';
 import { CoordinationScopeProvider } from './screens/common/CoordinationScope';
-import { ReliefScreen } from './screens/dispatch/ReliefScreen';
-import { RegisterShelterScreen, ShelterListScreen, ShelterManageScreen } from './screens/shelters/ShelterScreens';
-import { TeamsScreen } from './screens/dispatch/TeamsScreen';
-import { HubScreen } from './screens/common/HubScreen';
-import { ReportIncidentScreen } from './screens/reports/ReportIncidentScreen';
-import { MyReportDetailScreen, MyReportsScreen } from './screens/reports/ReportViews';
-import { ReviewDetailScreen, ReviewHistoryScreen, ReviewQueueScreen } from './screens/reports/ReviewScreens';
-import { RescueAssignmentScreen } from './screens/dispatch/RescueAssignmentScreen';
-import { ReportsScreen } from './screens/analytics/ReportsScreen';
-import { IssueWarningScreen } from './screens/warnings/IssueWarningScreen';
-import { WarningDetailScreen } from './screens/warnings/WarningDetailScreen';
-import { WarningsDashboardScreen } from './screens/warnings/WarningsDashboardScreen';
+import { commonScreens } from './screens/common';
 
-function Home() {
+/** Screens of the five use cases, each module registers its own. */
+const SCREENS: Partial<Record<RouteName, ComponentType>> = {
+  ...commonScreens,
+};
+
+const Stack = createNativeStackNavigator();
+
+/**
+ * Root navigator. It is keyed by the signed-in persona, so switching persona
+ * starts again on that role's home screen.
+ */
+export function App({ initialPath }: { initialPath?: string }) {
   const { user } = useSafeZone();
-  return isAlertRecipient(user) ? <HomeScreen /> : <Navigate to={homeRouteFor(user)} replace />;
-}
-
-export function AppRoutes() {
-  const { user } = useSafeZone();
+  const initialState = initialPath ? (getStateFromPath(initialPath, linking.config) as InitialState | undefined) : undefined;
   return (
-    <CoordinationScopeProvider key={user.id}>
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/hub" element={<HubScreen />} />
-        {/* UC01 - Issue Hazard Warning */}
-        <Route path="/alerts" element={<AlertsScreen />} />
-        <Route path="/alerts/:alertId" element={<AlertDetailScreen />} />
-        <Route path="/warnings" element={<WarningsDashboardScreen />} />
-        <Route path="/warnings/new" element={<IssueWarningScreen />} />
-        <Route path="/warnings/:alertId" element={<WarningDetailScreen />} />
-        {/* UC02 - Submit & Verify Hazard Report */}
-        <Route path="/report" element={<ReportIncidentScreen />} />
-        <Route path="/my-reports" element={<MyReportsScreen />} />
-        <Route path="/my-reports/:reportId" element={<MyReportDetailScreen />} />
-        <Route path="/review" element={<ReviewQueueScreen />} />
-        <Route path="/review/history" element={<ReviewHistoryScreen />} />
-        <Route path="/review/:reportId" element={<ReviewDetailScreen />} />
-        {/* UC03 - Coordinate Emergency Shelters */}
-        <Route path="/shelters" element={<SheltersScreen />} />
-        <Route path="/shelters/:shelterId" element={<ShelterDetailScreen />} />
-        <Route path="/coordination" element={<CoordinationOverviewScreen />} />
-        <Route path="/coordination/shelters" element={<ShelterListScreen />} />
-        <Route path="/coordination/shelters/new" element={<RegisterShelterScreen />} />
-        <Route path="/coordination/shelters/:shelterId" element={<ShelterManageScreen />} />
-        {/* UC04 - Dispatch Rescue Teams & Relief Resources */}
-        <Route path="/coordination/teams" element={<TeamsScreen />} />
-        <Route path="/coordination/relief" element={<ReliefScreen />} />
-        <Route path="/rescue" element={<RescueAssignmentScreen />} />
-        {/* UC05 - Generate Disaster Response Reports */}
-        <Route path="/reports" element={<ReportsScreen />} />
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </CoordinationScopeProvider>
-  );
-}
-
-export function App() {
-  return (
-    <HashRouter>
-      <AppRoutes />
-    </HashRouter>
+    <NavigationContainer linking={linking} initialState={initialState} documentTitle={{ formatter: () => 'SafeZone' }}>
+      <StatusBar style="light" />
+      <CoordinationScopeProvider key={user.id}>
+        <Stack.Navigator initialRouteName={routeNameForPath(homeRouteFor(user)) ?? 'Hub'} screenOptions={{ headerShown: false, animation: 'slide_from_right' }}>
+          {(Object.keys(SCREENS) as RouteName[]).map((name) => (
+            <Stack.Screen key={name} name={name} component={SCREENS[name] as ComponentType} />
+          ))}
+        </Stack.Navigator>
+      </CoordinationScopeProvider>
+    </NavigationContainer>
   );
 }

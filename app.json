@@ -1,0 +1,43 @@
+{
+  "expo": {
+    "name": "SafeZone",
+    "slug": "safezone",
+    "scheme": "safezone",
+    "version": "2.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#13294b"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "lk.sliit.se3070.safezone"
+    },
+    "android": {
+      "package": "lk.sliit.se3070.safezone",
+      "adaptiveIcon": {
+        "backgroundColor": "#13294b",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "favicon": "./assets/favicon.png",
+      "output": "single"
+    },
+    "plugins": [
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "SafeZone uses your photos so you can attach evidence to a hazard report.",
+          "cameraPermission": "SafeZone uses the camera so you can photograph a hazard for your report."
+        }
+      ]
+    ]
+  }
+}

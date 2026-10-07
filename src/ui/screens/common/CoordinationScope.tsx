@@ -1,5 +1,7 @@
 import { createContext, useContext, useState, type ReactNode } from 'react';
+import { StyleSheet, View } from 'react-native';
 import { useSafeZone } from '../../AppContext';
+import { SelectField } from '../../components/Primitives';
 
 interface Scope {
   readonly eventId: string;
@@ -33,21 +35,16 @@ export function ScopeSelector() {
   const event = events.find((e) => e.id === scope.eventId);
   const districts = event ? event.districtIds : app.geo.listDistricts().map((d) => d.id);
   return (
-    <div className="scope">
-      <select aria-label="Disaster event" value={scope.eventId} onChange={(e) => scope.setEventId(e.target.value)}>
-        {events.map((e) => (
-          <option key={e.id} value={e.id}>
-            {e.name}
-          </option>
-        ))}
-      </select>
-      <select aria-label="District" value={scope.districtId} onChange={(e) => scope.setDistrictId(e.target.value)}>
-        {[...new Set([scope.districtId, ...districts])].map((id) => (
-          <option key={id} value={id}>
-            {app.geo.districtName(id)} District
-          </option>
-        ))}
-      </select>
-    </div>
+    <View style={styles.scope}>
+      <SelectField label="Disaster event" value={scope.eventId} onChange={scope.setEventId} options={events.map((e) => ({ value: e.id, label: e.name }))} />
+      <SelectField
+        label="District"
+        value={scope.districtId}
+        onChange={scope.setDistrictId}
+        options={[...new Set([scope.districtId, ...districts])].map((id) => ({ value: id, label: `${app.geo.districtName(id)} District` }))}
+      />
+    </View>
   );
 }
+
+const styles = StyleSheet.create({ scope: { gap: 8, marginBottom: 12 } });
