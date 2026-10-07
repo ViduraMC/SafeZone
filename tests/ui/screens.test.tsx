@@ -50,4 +50,14 @@ describe('React Native screens (presentation layer smoke tests)', () => {
     await fireEvent.changeText(screen.getByLabelText('Headline'), 'Flash flood in Colombo');
     expect(screen.queryByText('Enter a headline')).toBeNull();
   });
+
+  it('lists the duty officer review queue and verifies a report (UC02)', async () => {
+    const app = await renderAs(PERSONA_IDS.dutyOfficer, '/review');
+    const queue = screen.getAllByRole('link', { name: /^Review / });
+    expect(queue).toHaveLength(2);
+
+    await fireEvent.press(queue[0]);
+    await press('Verify Report');
+    expect(app.reportVerification.pendingQueue()).toHaveLength(1);
+  });
 });
