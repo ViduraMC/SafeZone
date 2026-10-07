@@ -62,7 +62,7 @@ broaden the scope where the critique justifies it.
 | # | Critique | Change in the UI |
 |---|---|---|
 | H1 | UC01/UC03 wireframes show citizen screens instead of the DMC / district officer's forms and dashboards | Role-based tabs: DMC officer gets *Hazard Warning Dashboard → Form → Review & Confirm → Delivery monitoring*; district officer gets *Overview / Shelters* (UC03) and *Teams / Relief* (UC04); duty officer gets a review queue. The citizen screens from the wireframes (critical alert, active warnings, shelter finder) are kept for the citizen role |
-| H2 | UC04 wireframes (Volunteer Tasks, Preparedness Hub) are unrelated to report generation | Our UC05 screens follow the original UC04 storyboard: filters (event, categories, districts, period) → report with timeline, reach, occupancy chart, distribution → Export CSV/JSON/Print-PDF |
+| H2 | UC04 wireframes (Volunteer Tasks, Preparedness Hub) are unrelated to report generation | Our UC05 screens follow the original UC04 storyboard: filters (event, categories, districts, period) → report with timeline, reach, occupancy chart, distribution → Export CSV/JSON through the share sheet |
 | H3 | Storyboards show desktop monitors, but the system is mobile-only | Every screen is a mobile layout (max 430 px, bottom tab bar, thumb-reachable primary actions) |
 | H4 | Low-fi screens use US conventions (miles, ST 12345, (555), ADA, National Weather Service) | Sri Lankan data only: km, +94 numbers, 119 emergency number, real districts and river basins, DMC / Divisional Secretariat owners |
 | H5 | No offline / sync state in the hi-fi screens | Online/Offline pill with pending-sync counter on every screen, "Saved on this device" confirmation, Hub outbox list with **Sync now** |
