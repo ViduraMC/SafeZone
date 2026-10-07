@@ -60,4 +60,12 @@ describe('React Native screens (presentation layer smoke tests)', () => {
     await press('Verify Report');
     expect(app.reportVerification.pendingQueue()).toHaveLength(1);
   });
+
+  it('warns the district officer when a shelter is near capacity (UC03 A1)', async () => {
+    await renderAs(PERSONA_IDS.districtOfficer, '/coordination/shelters/SHL-KADU-CH');
+    await fireEvent.changeText(screen.getByLabelText('Allocate evacuees'), '45');
+    await press('Confirm allocation');
+    expect(screen.getByText(/is approaching capacity/)).toBeTruthy();
+    expect(screen.getByText('Alternative shelters')).toBeTruthy();
+  });
 });
